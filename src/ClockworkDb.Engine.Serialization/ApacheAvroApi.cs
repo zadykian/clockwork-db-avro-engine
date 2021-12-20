@@ -14,7 +14,7 @@ public static class ApacheAvroApi
 	/// <summary>
 	/// Serializes given object to AVRO format (including header with metadata)
 	/// </summary>
-	public static byte[] Serialize(object obj)
+	public static IEnumerable<byte> Serialize(object obj)
 	{
 		using var resultStream = new MemoryStream();
 		var schema = Schema.Create(obj);
@@ -29,9 +29,9 @@ public static class ApacheAvroApi
 	/// <summary>
 	/// Deserializes AVRO object to .NET instance.
 	/// </summary>
-	public static async ValueTask<T> DeserializeAsync<T>(byte[] avroBytes)
+	public static async ValueTask<T> DeserializeAsync<T>(IEnumerable<byte> avroBytes)
 	{
-		await using var stream = new MemoryStream(avroBytes);
+		await using var stream = new MemoryStream(avroBytes.ToArray());
 		return Decoder.Decode<T>(stream, Schema.Create(typeof(T)));
 	}
 
@@ -42,27 +42,5 @@ public static class ApacheAvroApi
 	{
 		var reader = new ReflectionSchemaBuilder(new AvroSerializerSettings()).BuildSchema(type);
 		return reader.ToString();
-	}
-
-	/// <summary>
-	/// Extracts data schema from given AVRO object
-	/// </summary>
-	public static string GetSchema(byte[] avroBytes)
-	{
-		using var stream = new MemoryStream(avroBytes);
-		var headerDecoder = new HeaderDecoder();
-		var schema = headerDecoder.GetSchema(stream);
-		return schema;
-	}
-
-	/// <summary>
-	/// Extracts data schema from AVRO file under given path
-	/// </summary>
-	public static string GetSchema(string filePath)
-	{
-		using var stream = new FileStream(filePath, FileMode.Open);
-		var headerDecoder = new HeaderDecoder();
-		var schema = headerDecoder.GetSchema(stream);
-		return schema;
 	}
 }
