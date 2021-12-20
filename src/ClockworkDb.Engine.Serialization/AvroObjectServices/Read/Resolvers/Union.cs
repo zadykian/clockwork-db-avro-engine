@@ -6,18 +6,22 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read.Resolvers;
 
 internal partial class Resolver
 {
-    protected virtual object ResolveUnion(UnionSchema writerSchema, TypeSchema readerSchema, IReader d, Type type)
+    private object ResolveUnion(
+        UnionSchema currentWriterSchema,
+        TypeSchema currentReaderSchema,
+        IReader d,
+        Type type)
     {
         int index = d.ReadUnionIndex();
-        TypeSchema ws = writerSchema.Schemas[index];
+        TypeSchema ws = currentWriterSchema.Schemas[index];
 
-        if (readerSchema is UnionSchema unionSchema)
-            readerSchema = FindBranch(unionSchema, ws);
+        if (currentReaderSchema is UnionSchema unionSchema)
+            currentReaderSchema = FindBranch(unionSchema, ws);
         else
-        if (!readerSchema.CanRead(ws))
-            throw new AvroException("Schema mismatch. Reader: " + _readerSchema + ", writer: " + _writerSchema);
+        if (!currentReaderSchema.CanRead(ws))
+            throw new AvroException("Schema mismatch. Reader: " + currentReaderSchema + ", writer: " + currentWriterSchema);
 
-        return Resolve(ws, readerSchema, d, type);
+        return Resolve(ws, currentReaderSchema, d, type);
     }
 
     protected static TypeSchema FindBranch(UnionSchema us, TypeSchema schema)

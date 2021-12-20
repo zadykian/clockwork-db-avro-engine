@@ -4,7 +4,7 @@ using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 
-internal class Decimal
+internal class AvroDecimal
 {
     internal Encoder.WriteItem Resolve(DecimalSchema schema)
     {

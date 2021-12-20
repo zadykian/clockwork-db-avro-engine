@@ -1,5 +1,3 @@
-
-
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using Newtonsoft.Json;
 

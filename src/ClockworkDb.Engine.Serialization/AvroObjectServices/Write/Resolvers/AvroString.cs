@@ -2,7 +2,7 @@
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 
-internal class String
+internal class AvroString
 {
     internal void Resolve(object value, IWriter encoder)
     {

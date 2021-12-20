@@ -1,55 +1,34 @@
-﻿#region license
-// Copyright (c) Microsoft Corporation
-// All rights reserved.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not
-// use this file except in compliance with the License.  You may obtain a copy
-// of the License at http://www.apache.org/licenses/LICENSE-2.0
-// 
-// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-// WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-// MERCHANTABLITY OR NON-INFRINGEMENT.
-// 
-// See the Apache Version 2.0 License for specific language governing
-// permissions and limitations under the License.
-
-/** Modifications copyright(C) 2021 Adrian Strugala **/
-
-#endregion
-
-
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 
-internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparable<AvroDecimal>,
-    IEquatable<AvroDecimal>
+internal readonly struct AvroDecimalValue : IConvertible, IFormattable, IComparable, IComparable<AvroDecimalValue>,
+    IEquatable<AvroDecimalValue>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given double.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given double.
     /// </summary>
     /// <param name="value">The double value.</param>
-    internal AvroDecimal(double value)
+    internal AvroDecimalValue(double value)
         : this((decimal)value)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given float.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given float.
     /// </summary>
     /// <param name="value">The float value.</param>
-    internal AvroDecimal(float value)
+    internal AvroDecimalValue(float value)
         : this((decimal)value)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given decimal.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given decimal.
     /// </summary>
     /// <param name="value">The decimal value.</param>
-    internal AvroDecimal(decimal value)
+    internal AvroDecimalValue(decimal value)
     {
         var bytes = GetBytesFromDecimal(value);
 
@@ -67,7 +46,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
         SeparatorCharacter = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator.ToCharArray()[0];
     }
 
-    internal AvroDecimal(string value)
+    internal AvroDecimalValue(string value)
     {
         SeparatorCharacter = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator.ToCharArray()[0];
 
@@ -80,48 +59,48 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given int.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given int.
     /// </summary>
     /// <param name="value">The int value.</param>
-    internal AvroDecimal(int value)
+    internal AvroDecimalValue(int value)
         : this(new BigInteger(value), 0)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given long.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given long.
     /// </summary>
     /// <param name="value">The long value.</param>
-    internal AvroDecimal(long value)
+    internal AvroDecimalValue(long value)
         : this(new BigInteger(value), 0)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given unsigned int.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given unsigned int.
     /// </summary>
     /// <param name="value">The unsigned int value.</param>
-    public AvroDecimal(uint value)
+    public AvroDecimalValue(uint value)
         : this(new BigInteger(value), 0)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given unsigned long.
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given unsigned long.
     /// </summary>
     /// <param name="value">The unsigned long value.</param>
-    public AvroDecimal(ulong value)
+    public AvroDecimalValue(ulong value)
         : this(new BigInteger(value), 0)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AvroDecimal"/> class from a given <see cref="BigInteger"/>
+    /// Initializes a new instance of the <see cref="AvroDecimalValue"/> class from a given <see cref="BigInteger"/>
     /// and a scale.
     /// </summary>
     /// <param name="unscaledValue">The double value.</param>
     /// <param name="scale">The scale.</param>
-    internal AvroDecimal(BigInteger unscaledValue, int scale)
+    internal AvroDecimalValue(BigInteger unscaledValue, int scale)
     {
         UnscaledValue = unscaledValue;
         Scale = scale;
@@ -129,24 +108,24 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Gets the unscaled integer value represented by the current <see cref="AvroDecimal"/>.
+    /// Gets the unscaled integer value represented by the current <see cref="AvroDecimalValue"/>.
     /// </summary>
     internal BigInteger UnscaledValue { get; }
 
     /// <summary>
-    /// Gets the scale of the current <see cref="AvroDecimal"/>.
+    /// Gets the scale of the current <see cref="AvroDecimalValue"/>.
     /// </summary>
     internal int Scale { get; }
 
     internal char SeparatorCharacter { get; }
 
     /// <summary>
-    /// Gets the sign of the current <see cref="AvroDecimal"/>.
+    /// Gets the sign of the current <see cref="AvroDecimalValue"/>.
     /// </summary>
     internal int Sign => UnscaledValue.Sign;
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a string.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a string.
     /// </summary>
     /// <returns>A string representation of the numeric value.</returns>
     public override string ToString()
@@ -160,343 +139,343 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
         return number;
     }
 
-    public static bool operator ==(AvroDecimal left, AvroDecimal right)
+    public static bool operator ==(AvroDecimalValue left, AvroDecimalValue right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(AvroDecimal left, AvroDecimal right)
+    public static bool operator !=(AvroDecimalValue left, AvroDecimalValue right)
     {
         return !left.Equals(right);
     }
 
-    public static bool operator >(AvroDecimal left, AvroDecimal right)
+    public static bool operator >(AvroDecimalValue left, AvroDecimalValue right)
     {
         return left.CompareTo(right) > 0;
     }
 
-    public static bool operator >=(AvroDecimal left, AvroDecimal right)
+    public static bool operator >=(AvroDecimalValue left, AvroDecimalValue right)
     {
         return left.CompareTo(right) >= 0;
     }
 
-    public static bool operator <(AvroDecimal left, AvroDecimal right)
+    public static bool operator <(AvroDecimalValue left, AvroDecimalValue right)
     {
         return left.CompareTo(right) < 0;
     }
 
-    public static bool operator <=(AvroDecimal left, AvroDecimal right)
+    public static bool operator <=(AvroDecimalValue left, AvroDecimalValue right)
     {
         return left.CompareTo(right) <= 0;
     }
 
-    public static bool operator ==(AvroDecimal left, decimal right)
+    public static bool operator ==(AvroDecimalValue left, decimal right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(AvroDecimal left, decimal right)
+    public static bool operator !=(AvroDecimalValue left, decimal right)
     {
         return !left.Equals(right);
     }
 
-    public static bool operator >(AvroDecimal left, decimal right)
+    public static bool operator >(AvroDecimalValue left, decimal right)
     {
         return left.CompareTo(right) > 0;
     }
 
-    public static bool operator >=(AvroDecimal left, decimal right)
+    public static bool operator >=(AvroDecimalValue left, decimal right)
     {
         return left.CompareTo(right) >= 0;
     }
 
-    public static bool operator <(AvroDecimal left, decimal right)
+    public static bool operator <(AvroDecimalValue left, decimal right)
     {
         return left.CompareTo(right) < 0;
     }
 
-    public static bool operator <=(AvroDecimal left, decimal right)
+    public static bool operator <=(AvroDecimalValue left, decimal right)
     {
         return left.CompareTo(right) <= 0;
     }
 
-    public static bool operator ==(decimal left, AvroDecimal right)
+    public static bool operator ==(decimal left, AvroDecimalValue right)
     {
         return left.Equals(right);
     }
 
-    public static bool operator !=(decimal left, AvroDecimal right)
+    public static bool operator !=(decimal left, AvroDecimalValue right)
     {
         return !left.Equals(right);
     }
 
-    public static bool operator >(decimal left, AvroDecimal right)
+    public static bool operator >(decimal left, AvroDecimalValue right)
     {
         return left.CompareTo(right) > 0;
     }
 
-    public static bool operator >=(decimal left, AvroDecimal right)
+    public static bool operator >=(decimal left, AvroDecimalValue right)
     {
         return left.CompareTo(right) >= 0;
     }
 
-    public static bool operator <(decimal left, AvroDecimal right)
+    public static bool operator <(decimal left, AvroDecimalValue right)
     {
         return left.CompareTo(right) < 0;
     }
 
-    public static bool operator <=(decimal left, AvroDecimal right)
+    public static bool operator <=(decimal left, AvroDecimalValue right)
     {
         return left.CompareTo(right) <= 0;
     }
 
-    public static explicit operator byte(AvroDecimal value)
+    public static explicit operator byte(AvroDecimalValue value)
     {
         return ToByte(value);
     }
 
     /// <summary>
-    /// Creates a byte from a given <see cref="AvroDecimal"/>.
+    /// Creates a byte from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A byte.</returns>
-    public static byte ToByte(AvroDecimal value)
+    public static byte ToByte(AvroDecimalValue value)
     {
         return value.ToType<byte>();
     }
 
-    public static explicit operator sbyte(AvroDecimal value)
+    public static explicit operator sbyte(AvroDecimalValue value)
     {
         return ToSByte(value);
     }
 
     /// <summary>
-    /// Creates a signed byte from a given <see cref="AvroDecimal"/>.
+    /// Creates a signed byte from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A signed byte.</returns>
-    public static sbyte ToSByte(AvroDecimal value)
+    public static sbyte ToSByte(AvroDecimalValue value)
     {
         return value.ToType<sbyte>();
     }
 
-    public static explicit operator short(AvroDecimal value)
+    public static explicit operator short(AvroDecimalValue value)
     {
         return ToInt16(value);
     }
 
     /// <summary>
-    /// Creates a short from a given <see cref="AvroDecimal"/>.
+    /// Creates a short from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A short.</returns>
-    public static short ToInt16(AvroDecimal value)
+    public static short ToInt16(AvroDecimalValue value)
     {
         return value.ToType<short>();
     }
 
-    public static explicit operator int(AvroDecimal value)
+    public static explicit operator int(AvroDecimalValue value)
     {
         return ToInt32(value);
     }
 
     /// <summary>
-    /// Creates an int from a given <see cref="AvroDecimal"/>.
+    /// Creates an int from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>An int.</returns>
-    public static int ToInt32(AvroDecimal value)
+    public static int ToInt32(AvroDecimalValue value)
     {
         return value.ToType<int>();
     }
 
-    public static explicit operator long(AvroDecimal value)
+    public static explicit operator long(AvroDecimalValue value)
     {
         return ToInt64(value);
     }
 
     /// <summary>
-    /// Creates a long from a given <see cref="AvroDecimal"/>.
+    /// Creates a long from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A long.</returns>
-    public static long ToInt64(AvroDecimal value)
+    public static long ToInt64(AvroDecimalValue value)
     {
         return value.ToType<long>();
     }
 
-    public static explicit operator ushort(AvroDecimal value)
+    public static explicit operator ushort(AvroDecimalValue value)
     {
         return ToUInt16(value);
     }
 
     /// <summary>
-    /// Creates an unsigned short from a given <see cref="AvroDecimal"/>.
+    /// Creates an unsigned short from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>An unsigned short.</returns>
-    public static ushort ToUInt16(AvroDecimal value)
+    public static ushort ToUInt16(AvroDecimalValue value)
     {
         return value.ToType<ushort>();
     }
 
-    public static explicit operator uint(AvroDecimal value)
+    public static explicit operator uint(AvroDecimalValue value)
     {
         return ToUInt32(value);
     }
 
     /// <summary>
-    /// Creates an unsigned int from a given <see cref="AvroDecimal"/>.
+    /// Creates an unsigned int from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>An unsigned int.</returns>
-    public static uint ToUInt32(AvroDecimal value)
+    public static uint ToUInt32(AvroDecimalValue value)
     {
         return value.ToType<uint>();
     }
 
-    public static explicit operator ulong(AvroDecimal value)
+    public static explicit operator ulong(AvroDecimalValue value)
     {
         return ToUInt64(value);
     }
 
     /// <summary>
-    /// Creates an unsigned long from a given <see cref="AvroDecimal"/>.
+    /// Creates an unsigned long from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>An unsigned long.</returns>
-    public static ulong ToUInt64(AvroDecimal value)
+    public static ulong ToUInt64(AvroDecimalValue value)
     {
         return value.ToType<ulong>();
     }
 
-    public static explicit operator float(AvroDecimal value)
+    public static explicit operator float(AvroDecimalValue value)
     {
         return ToSingle(value);
     }
 
     /// <summary>
-    /// Creates a double from a given <see cref="AvroDecimal"/>.
+    /// Creates a double from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A double.</returns>
-    public static float ToSingle(AvroDecimal value)
+    public static float ToSingle(AvroDecimalValue value)
     {
         return value.ToType<float>();
     }
 
-    public static explicit operator double(AvroDecimal value)
+    public static explicit operator double(AvroDecimalValue value)
     {
         return ToDouble(value);
     }
 
     /// <summary>
-    /// Creates a double from a given <see cref="AvroDecimal"/>.
+    /// Creates a double from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A double.</returns>
-    public static double ToDouble(AvroDecimal value)
+    public static double ToDouble(AvroDecimalValue value)
     {
         return value.ToType<double>();
     }
 
-    public static explicit operator decimal(AvroDecimal value)
+    public static explicit operator decimal(AvroDecimalValue value)
     {
         return ToDecimal(value);
     }
 
     /// <summary>
-    /// Creates a decimal from a given <see cref="AvroDecimal"/>.
+    /// Creates a decimal from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A decimal.</returns>
-    public static decimal ToDecimal(AvroDecimal value)
+    public static decimal ToDecimal(AvroDecimalValue value)
     {
         return value.ToType<decimal>();
     }
 
-    public static explicit operator BigInteger(AvroDecimal value)
+    public static explicit operator BigInteger(AvroDecimalValue value)
     {
         return ToBigInteger(value);
     }
 
     /// <summary>
-    /// Creates a <see cref="BigInteger"/> from a given <see cref="AvroDecimal"/>.
+    /// Creates a <see cref="BigInteger"/> from a given <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="value">The <see cref="AvroDecimal"/>.</param>
+    /// <param name="value">The <see cref="AvroDecimalValue"/>.</param>
     /// <returns>A <see cref="BigInteger"/>.</returns>
-    public static BigInteger ToBigInteger(AvroDecimal value)
+    public static BigInteger ToBigInteger(AvroDecimalValue value)
     {
         var scaleDivisor = BigInteger.Pow(new BigInteger(10), value.Scale);
         var scaledValue = BigInteger.Divide(value.UnscaledValue, scaleDivisor);
         return scaledValue;
     }
 
-    public static implicit operator AvroDecimal(byte value)
+    public static implicit operator AvroDecimalValue(byte value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(sbyte value)
+    public static implicit operator AvroDecimalValue(sbyte value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(short value)
+    public static implicit operator AvroDecimalValue(short value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(int value)
+    public static implicit operator AvroDecimalValue(int value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(long value)
+    public static implicit operator AvroDecimalValue(long value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(ushort value)
+    public static implicit operator AvroDecimalValue(ushort value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(uint value)
+    public static implicit operator AvroDecimalValue(uint value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(ulong value)
+    public static implicit operator AvroDecimalValue(ulong value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(float value)
+    public static implicit operator AvroDecimalValue(float value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(double value)
+    public static implicit operator AvroDecimalValue(double value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(decimal value)
+    public static implicit operator AvroDecimalValue(decimal value)
     {
-        return new AvroDecimal(value);
+        return new AvroDecimalValue(value);
     }
 
-    public static implicit operator AvroDecimal(BigInteger value)
+    public static implicit operator AvroDecimalValue(BigInteger value)
     {
-        return new AvroDecimal(value, 0);
+        return new AvroDecimalValue(value, 0);
     }
 
     /// <summary>
-    /// Converts the numeric value of the current <see cref="AvroDecimal"/> to a given type.
+    /// Converts the numeric value of the current <see cref="AvroDecimalValue"/> to a given type.
     /// </summary>
-    /// <typeparam name="T">The type to which the value of the current <see cref="AvroDecimal"/> should be converted.</typeparam>
-    /// <returns>A value of type <typeparamref name="T"/> converted from the current <see cref="AvroDecimal"/>.</returns>
+    /// <typeparam name="T">The type to which the value of the current <see cref="AvroDecimalValue"/> should be converted.</typeparam>
+    /// <returns>A value of type <typeparamref name="T"/> converted from the current <see cref="AvroDecimalValue"/>.</returns>
     public T ToType<T>()
         where T : struct
     {
@@ -504,9 +483,9 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the numeric value of the current <see cref="AvroDecimal"/> to a given type.
+    /// Converts the numeric value of the current <see cref="AvroDecimalValue"/> to a given type.
     /// </summary>
-    /// <param name="conversionType">The type to which the value of the current <see cref="AvroDecimal"/> should be converted.</param>
+    /// <param name="conversionType">The type to which the value of the current <see cref="AvroDecimalValue"/> should be converted.</param>
     /// <param name="provider">An System.IFormatProvider interface implementation that supplies culture-specific formatting information.</param>
     /// <returns></returns>
     object IConvertible.ToType(Type conversionType, IFormatProvider provider)
@@ -527,20 +506,20 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Returns a value that indicates whether the current <see cref="AvroDecimal"/> and a specified object
+    /// Returns a value that indicates whether the current <see cref="AvroDecimalValue"/> and a specified object
     /// have the same value.
     /// </summary>
     /// <param name="obj">The object to compare.</param>
-    /// <returns>true if the obj argument is an <see cref="AvroDecimal"/> object, and its value
-    /// is equal to the value of the current <see cref="AvroDecimal"/> instance; otherwise false.
+    /// <returns>true if the obj argument is an <see cref="AvroDecimalValue"/> object, and its value
+    /// is equal to the value of the current <see cref="AvroDecimalValue"/> instance; otherwise false.
     /// </returns>
     public override bool Equals(object obj)
     {
-        return (obj is AvroDecimal) && Equals((AvroDecimal)obj);
+        return (obj is AvroDecimalValue) && Equals((AvroDecimalValue)obj);
     }
 
     /// <summary>
-    /// Returns the hash code for the current <see cref="AvroDecimal"/>.
+    /// Returns the hash code for the current <see cref="AvroDecimalValue"/>.
     /// </summary>
     /// <returns>The hash code.</returns>
     public override int GetHashCode()
@@ -549,7 +528,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Returns the <see cref="TypeCode"/> for the current <see cref="AvroDecimal"/>.
+    /// Returns the <see cref="TypeCode"/> for the current <see cref="AvroDecimalValue"/>.
     /// </summary>
     /// <returns><see cref="TypeCode.Object"/>.</returns>
     TypeCode IConvertible.GetTypeCode()
@@ -558,17 +537,17 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a boolean.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a boolean.
     /// </summary>
     /// <param name="provider">The format provider.</param>
-    /// <returns>true or false, which reflects the value of the current <see cref="AvroDecimal"/>.</returns>
+    /// <returns>true or false, which reflects the value of the current <see cref="AvroDecimalValue"/>.</returns>
     bool IConvertible.ToBoolean(IFormatProvider provider)
     {
         return Convert.ToBoolean(this, provider);
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a byte.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a byte.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A byte.</returns>
@@ -578,7 +557,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a char.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a char.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>This method always throws an <see cref="InvalidCastException"/>.</returns>
@@ -588,7 +567,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a <see cref="DateTime"/>.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a <see cref="DateTime"/>.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>This method always throws an <see cref="InvalidCastException"/>.</returns>
@@ -598,7 +577,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a decimal.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a decimal.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A decimal.</returns>
@@ -608,7 +587,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a double.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a double.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A double.</returns>
@@ -618,7 +597,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a short.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a short.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A short.</returns>
@@ -628,7 +607,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to an int.
+    /// Converts the current <see cref="AvroDecimalValue"/> to an int.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>An int.</returns>
@@ -638,7 +617,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a long.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a long.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A long.</returns>
@@ -648,7 +627,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a signed byte.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a signed byte.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A signed byte.</returns>
@@ -658,7 +637,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a float.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a float.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A float.</returns>
@@ -668,7 +647,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a string.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a string.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>A string.</returns>
@@ -678,7 +657,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to an unsigned short.
+    /// Converts the current <see cref="AvroDecimalValue"/> to an unsigned short.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>An unsigned short.</returns>
@@ -688,7 +667,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to an unsigned int.
+    /// Converts the current <see cref="AvroDecimalValue"/> to an unsigned int.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>An unsigned int.</returns>
@@ -698,7 +677,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to an unsigned long.
+    /// Converts the current <see cref="AvroDecimalValue"/> to an unsigned long.
     /// </summary>
     /// <param name="provider">The format provider.</param>
     /// <returns>An unsigned long.</returns>
@@ -708,7 +687,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Converts the current <see cref="AvroDecimal"/> to a string.
+    /// Converts the current <see cref="AvroDecimalValue"/> to a string.
     /// </summary>
     /// <param name="format"></param>
     /// <param name="formatProvider">The format provider.</param>
@@ -719,7 +698,7 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Compares the value of the current <see cref="AvroDecimal"/> to the value of another object.
+    /// Compares the value of the current <see cref="AvroDecimalValue"/> to the value of another object.
     /// </summary>
     /// <param name="obj">The object to compare.</param>
     /// <returns>A value that indicates the relative order of the objects being compared.</returns>
@@ -728,20 +707,20 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
         if (obj == null)
             return 1;
 
-        if (!(obj is AvroDecimal))
+        if (!(obj is AvroDecimalValue))
             throw new ArgumentException("Compare to object must be a BigDecimal", nameof(obj));
 
-        return CompareTo((AvroDecimal)obj);
+        return CompareTo((AvroDecimalValue)obj);
     }
 
     /// <summary>
-    /// Compares the value of the current <see cref="AvroDecimal"/> to the value of another
-    /// <see cref="AvroDecimal"/>.
+    /// Compares the value of the current <see cref="AvroDecimalValue"/> to the value of another
+    /// <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="other">The <see cref="AvroDecimal"/> to compare.</param>
-    /// <returns>A value that indicates the relative order of the <see cref="AvroDecimal"/>
+    /// <param name="other">The <see cref="AvroDecimalValue"/> to compare.</param>
+    /// <returns>A value that indicates the relative order of the <see cref="AvroDecimalValue"/>
     /// instances being compared.</returns>
-    public int CompareTo(AvroDecimal other)
+    public int CompareTo(AvroDecimalValue other)
     {
         var unscaledValueCompare = UnscaledValue.CompareTo(other.UnscaledValue);
         var scaleCompare = Scale.CompareTo(other.Scale);
@@ -762,13 +741,13 @@ internal struct AvroDecimal : IConvertible, IFormattable, IComparable, IComparab
     }
 
     /// <summary>
-    /// Returns a value that indicates whether the current <see cref="AvroDecimal"/> has the same
-    /// value as another <see cref="AvroDecimal"/>.
+    /// Returns a value that indicates whether the current <see cref="AvroDecimalValue"/> has the same
+    /// value as another <see cref="AvroDecimalValue"/>.
     /// </summary>
-    /// <param name="other">The <see cref="AvroDecimal"/> to compare.</param>
-    /// <returns>true if the current <see cref="AvroDecimal"/> has the same value as <paramref name="other"/>;
+    /// <param name="other">The <see cref="AvroDecimalValue"/> to compare.</param>
+    /// <returns>true if the current <see cref="AvroDecimalValue"/> has the same value as <paramref name="other"/>;
     /// otherwise false.</returns>
-    public bool Equals(AvroDecimal other)
+    public bool Equals(AvroDecimalValue other)
     {
         return Scale == other.Scale && UnscaledValue == other.UnscaledValue;
     }

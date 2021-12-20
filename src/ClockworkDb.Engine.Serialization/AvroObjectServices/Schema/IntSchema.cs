@@ -3,25 +3,24 @@
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 
 /// <summary>
-///     Class represents an int schema.
-///     For more details please see <a href="http://avro.apache.org/docs/current/spec.html#schema_primitive">the specification</a>.
+/// Class represents an int schema.
 /// </summary>
 internal class IntSchema : PrimitiveTypeSchema
 {
-    internal IntSchema()
-        : this(typeof(int))
-    {
-    }
+	internal IntSchema()
+		: this(typeof(int))
+	{
+	}
 
-    internal IntSchema(Type runtimeType)
-        : this(runtimeType, new Dictionary<string, string>())
-    {
-    }
+	internal IntSchema(Type runtimeType)
+		: this(runtimeType, new Dictionary<string, string>())
+	{
+	}
 
-    internal IntSchema(Type runtimeType, Dictionary<string, string> attributes)
-        : base(runtimeType, attributes)
-    {
-    }
+	internal IntSchema(Type runtimeType, Dictionary<string, string> attributes)
+		: base(runtimeType, attributes)
+	{
+	}
 
-    internal override AvroType Type => AvroType.Int;
+	internal override AvroType Type => AvroType.Int;
 }

@@ -1,13 +1,11 @@
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
-using ClockworkDb.Engine.Serialization.AvroObjectServices.Skip;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read.Resolvers;
 
 internal partial class Resolver
 {
-    private readonly Skipper skipper;
     private readonly TypeSchema readerSchema;
     private readonly TypeSchema writerSchema;
 
@@ -15,26 +13,24 @@ internal partial class Resolver
     {
         this.readerSchema = readerSchema;
         this.writerSchema = writerSchema;
-
-        skipper = new Skipper();
     }
 
     internal T Resolve<T>(IReader reader) => (T) Resolve(writerSchema, readerSchema, reader, typeof(T));
 
     private object Resolve(
-        TypeSchema writerSchema,
-        TypeSchema readerSchema,
+        TypeSchema currentWriterSchema,
+        TypeSchema currentReaderSchema,
         IReader d,
         Type type)
     {
         try
         {
-            if (readerSchema.Type == AvroType.Union && writerSchema.Type != AvroType.Union)
+            if (currentReaderSchema.Type == AvroType.Union && currentWriterSchema.Type != AvroType.Union)
             {
-                readerSchema = FindBranch(readerSchema as UnionSchema, writerSchema);
+                currentReaderSchema = FindBranch(currentReaderSchema as UnionSchema, currentWriterSchema);
             }
 
-            switch (writerSchema.Type)
+            switch (currentWriterSchema.Type)
             {
                 case AvroType.Null:
                     return null;
@@ -53,25 +49,25 @@ internal partial class Resolver
                 case AvroType.Bytes:
                     return d.ReadBytes();
                 case AvroType.Logical:
-                    return ResolveLogical((LogicalTypeSchema)writerSchema, (LogicalTypeSchema)readerSchema, d, type);
+                    return ResolveLogical((LogicalTypeSchema)currentWriterSchema, (LogicalTypeSchema)currentReaderSchema, d, type);
                 case AvroType.Error:
                 case AvroType.Record:
-                    return ResolveRecord((RecordSchema)writerSchema, (RecordSchema)readerSchema, d, type);
+                    return ResolveRecord((RecordSchema)currentWriterSchema, (RecordSchema)currentReaderSchema, d, type);
                 case AvroType.Enum:
-                    return ResolveEnum((EnumSchema)writerSchema, readerSchema, d, type);
+                    return ResolveEnum((EnumSchema)currentWriterSchema, currentReaderSchema, d, type);
                 case AvroType.Fixed:
-                    return ResolveFixed((FixedSchema)writerSchema, readerSchema, d, type);
+                    return ResolveFixed((FixedSchema)currentWriterSchema, currentReaderSchema, d, type);
                 case AvroType.Map:
-                    return ResolveMap((MapSchema)writerSchema, readerSchema, d, type);
+                    return ResolveMap((MapSchema)currentWriterSchema, currentReaderSchema, d, type);
                 case AvroType.Union:
-                    return ResolveUnion((UnionSchema)writerSchema, readerSchema, d, type);
+                    return ResolveUnion((UnionSchema)currentWriterSchema, currentReaderSchema, d, type);
                 default:
-                    throw new AvroException("Unknown schema type: " + writerSchema);
+                    throw new AvroException("Unknown schema type: " + currentWriterSchema);
             }
         }
         catch (Exception e)
         {
-            throw new AvroTypeMismatchException($"Unable to deserialize [{writerSchema.Name}] of schema [{writerSchema.Type}] to the target type [{type}]", e);
+            throw new AvroTypeMismatchException($"Unable to deserialize [{currentWriterSchema.Name}] of schema [{currentWriterSchema.Type}] to the target type [{type}]", e);
         }
     }
 }

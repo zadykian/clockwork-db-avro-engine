@@ -4,7 +4,7 @@ using ClockworkDb.Engine.Serialization.Features;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 
-internal class Array
+internal class AvroArray
 {
     internal Encoder.WriteItem Resolve(ArraySchema schema)
     {

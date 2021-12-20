@@ -4,7 +4,7 @@ using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 
-internal class Enum
+internal class AvroEnum
 {
     internal Encoder.WriteItem Resolve(EnumSchema schema)
     {

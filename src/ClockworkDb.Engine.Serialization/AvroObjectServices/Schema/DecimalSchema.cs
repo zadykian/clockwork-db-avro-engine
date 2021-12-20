@@ -1,20 +1,3 @@
-#region license
-/**Copyright (c) 2021 Adrian Struga�a
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* https://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-#endregion
-
 using System.Numerics;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
@@ -70,7 +53,7 @@ internal sealed class DecimalSchema : LogicalTypeSchema
 
     internal object ConvertToBaseValue(object logicalValue, DecimalSchema schema)
     {
-        var avroDecimal = new AvroDecimal((decimal)logicalValue);
+        var avroDecimal = new AvroDecimalValue((decimal)logicalValue);
         var logicalScale = Scale;
         var scale = avroDecimal.Scale;
 
@@ -99,7 +82,7 @@ Consider adding following attribute to your property:
             valueWithTrailingZeros = $"{logicalValue}{avroDecimal.SeparatorCharacter}{trailingZeros}";
         }
 
-        avroDecimal = new AvroDecimal(valueWithTrailingZeros);
+        avroDecimal = new AvroDecimalValue(valueWithTrailingZeros);
 
         var buffer = avroDecimal.UnscaledValue.ToByteArray();
         Array.Reverse(buffer);
@@ -119,10 +102,10 @@ Consider adding following attribute to your property:
             : ((FixedModel)baseValue).Value;
 
         Array.Reverse(buffer);
-        var avroDecimal = new AvroDecimal(new BigInteger(buffer), Scale);
+        var avroDecimal = new AvroDecimalValue(new BigInteger(buffer), Scale);
 
 
-        return AvroDecimal.ToDecimal(avroDecimal);
+        return AvroDecimalValue.ToDecimal(avroDecimal);
     }
 
     private static byte[] GetDecimalFixedByteArray(byte[] sourceBuffer, int size, byte fillValue)
