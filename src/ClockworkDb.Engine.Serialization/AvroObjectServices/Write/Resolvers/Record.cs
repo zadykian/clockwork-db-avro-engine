@@ -2,7 +2,6 @@
 using System.Linq.Expressions;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
-using ClockworkDb.Engine.Serialization.Features;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 

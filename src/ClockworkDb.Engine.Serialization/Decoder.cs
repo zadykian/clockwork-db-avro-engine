@@ -5,7 +5,7 @@ using ClockworkDb.Engine.Serialization.AvroObjectServices.Read.Resolvers;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features;
+namespace ClockworkDb.Engine.Serialization;
 
 internal static class Decoder
 {

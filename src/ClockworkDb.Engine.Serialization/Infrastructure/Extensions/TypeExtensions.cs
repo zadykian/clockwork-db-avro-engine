@@ -1,10 +1,4 @@
-﻿#region license
-
-#endregion
-
-using System.Collections;
-using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -15,7 +9,6 @@ internal static class TypeExtensions
 {
     internal static bool HasParameterlessConstructor(this Type type)
     {
-        //return type.GetTypeInfo().GetConstructor(BindingFlags.Instance | BindingFlags.internal | BindingFlags.Noninternal, null, Type.EmptyTypes, null) != null;
         return type.GetConstructor(Type.EmptyTypes) != null;
     }
 

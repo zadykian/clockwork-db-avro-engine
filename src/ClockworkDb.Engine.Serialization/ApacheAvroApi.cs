@@ -1,5 +1,4 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
-using ClockworkDb.Engine.Serialization.Features;
 
 namespace ClockworkDb.Engine.Serialization;
 
@@ -17,9 +16,9 @@ public static class ApacheAvroApi
 	{
 		using var resultStream = new MemoryStream();
 		var schema = Schema.Create(obj);
-		using (var writer = new Encoder(schema, resultStream))
+		using (var encoder = new Encoder(schema, resultStream))
 		{
-			writer.Append(obj);
+			encoder.Append(obj);
 		}
 
 		return resultStream.ToArray();

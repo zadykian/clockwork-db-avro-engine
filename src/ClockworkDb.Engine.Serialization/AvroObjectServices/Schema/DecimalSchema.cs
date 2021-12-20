@@ -29,13 +29,13 @@ internal sealed class DecimalSchema : LogicalTypeSchema
         BaseTypeSchema = new BytesSchema();
 
         if (precision <= 0)
-            throw new AvroTypeException("Property [Precision] of [Decimal] schema has to be greater than 0");
+            throw new AvroException("Property [Precision] of [Decimal] schema has to be greater than 0");
 
         if (scale < 0)
-            throw new AvroTypeException("Property [Scale] of [Decimal] schema has to be greater equal 0");
+            throw new AvroException("Property [Scale] of [Decimal] schema has to be greater equal 0");
 
         if (scale > precision)
-            throw new AvroTypeException("Property [Scale] of [Decimal] schema has to be lesser equal [Precision]");
+            throw new AvroException("Property [Scale] of [Decimal] schema has to be lesser equal [Precision]");
 
         Scale = scale;
         Precision = precision;
@@ -61,7 +61,7 @@ internal sealed class DecimalSchema : LogicalTypeSchema
         int sizeDiff = logicalScale - scale;
         if(sizeDiff < 0)
         {
-            throw new AvroTypeException(
+            throw new AvroException(
                 $@"Decimal Scale for value [{logicalValue}] is equal to [{scale}]. This exceeds default setting [{logicalScale}].
 Consider adding following attribute to your property:
 

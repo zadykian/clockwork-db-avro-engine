@@ -1,5 +1,4 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
-using ClockworkDb.Engine.Serialization.Features;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
@@ -12,7 +11,7 @@ internal class AvroEnum
         {
             if (!schema.Symbols.Contains(value.ToString()))
             {
-                throw new AvroTypeException(
+                throw new AvroException(
                     $"[Enum] Provided value is not of the enum [{schema.Name}] members");
             }
 

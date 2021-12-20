@@ -3,7 +3,7 @@ using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Write;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features;
+namespace ClockworkDb.Engine.Serialization;
 
 internal class Encoder : IDisposable
 {
@@ -77,7 +77,7 @@ internal class Encoder : IDisposable
 
     private void AssertOpen()
     {
-        if (!isOpen) throw new AvroRuntimeException("Cannot complete operation: avro file/stream not open");
+        if (!isOpen) throw new AvroException("Cannot complete operation: avro file/stream not open");
     }
 
     private void WriteIfBlockFull()

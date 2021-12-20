@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
-using ClockworkDb.Engine.Serialization.Features;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;

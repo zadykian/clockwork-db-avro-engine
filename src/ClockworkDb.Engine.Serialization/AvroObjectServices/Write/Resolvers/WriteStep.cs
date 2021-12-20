@@ -1,5 +1,4 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
-using ClockworkDb.Engine.Serialization.Features;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
 

@@ -1,10 +1,9 @@
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
-using ClockworkDb.Engine.Serialization.Features;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 
-internal partial class Reader : IReader
+internal partial class Reader
 {
     internal Header ReadHeader()
     {
@@ -52,6 +51,6 @@ internal partial class Reader : IReader
         ReadFixed(syncBuffer);
 
         if (!syncBuffer.SequenceEqual(expectedSync))
-            throw new AvroRuntimeException("Invalid sync!");
+            throw new AvroException("Invalid sync!");
     }
 }

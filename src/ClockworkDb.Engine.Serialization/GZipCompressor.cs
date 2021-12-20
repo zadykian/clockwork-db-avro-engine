@@ -1,6 +1,6 @@
 ﻿using System.IO.Compression;
 
-namespace ClockworkDb.Engine.Serialization.Features;
+namespace ClockworkDb.Engine.Serialization;
 
 /// <summary>
 /// GZip compressor/decompressor.
