@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using ClockworkDb.Engine.Serialization;
 using NUnit.Framework;
 
@@ -11,7 +12,27 @@ public class AvroApiSchemaTests : TestBase
 	[Test]
 	public void GenerateSchemaForSimpleEntityTest()
 	{
-		var schema = ApacheAvroApi.GenerateSchema(typeof(SimpleTestEntity));
-		Assert.IsFalse(string.IsNullOrWhiteSpace(schema));
+		const string expectedSchema = @"
+			{
+				""type"": ""record"",
+				""name"": ""SimpleTestEntity"",
+				""namespace"": ""ClockworkDb.Engine.Tests"",
+				""fields"": [
+					{
+						""name"": ""Id"",
+						""type"": ""long""
+					},
+					{
+						""name"": ""Info"", 
+						""type"": ""string""
+					}
+				]
+			}";
+
+		var actualSchema = ApacheAvroApi.GenerateSchema(typeof(SimpleTestEntity));
+
+		Assert.AreEqual(
+			expected: Regex.Replace(expectedSchema, @"\s+", string.Empty),
+			actual:   actualSchema);
 	}
 }

@@ -7,7 +7,7 @@ namespace ClockworkDb.Engine.Serialization;
 /// <summary>
 /// API which provides functionality for:
 /// <para> 1) Objects serialization/deserialization </para>
-/// <para> AVRO schema generation </para>
+/// <para> 2) AVRO schema generation </para>
 /// </summary>
 public static class ApacheAvroApi
 {
