@@ -1,6 +1,5 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.Features;
-using ClockworkDb.Engine.Serialization.Features.Deserialize;
 
 namespace ClockworkDb.Engine.Serialization;
 
@@ -32,7 +31,7 @@ public static class ApacheAvroApi
 	public static async ValueTask<T> DeserializeAsync<T>(IEnumerable<byte> avroBytes)
 	{
 		await using var stream = new MemoryStream(avroBytes.ToArray());
-		return Decoder.Decode<T>(stream, Schema.Create(typeof(T)));
+		return new Decoder().Decode<T>(stream, Schema.Create(typeof(T)));
 	}
 
 	/// <summary>

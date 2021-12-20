@@ -7,7 +7,7 @@ namespace ClockworkDb.Engine.Tests;
 /// <summary>
 /// AVRO schema generation tests.
 /// </summary>
-public class AvroApiSchemaTests : TestBase
+public class AvroApiSchemaTests : AvroApiTestBase
 {
 	[Test]
 	public void GenerateSchemaForSimpleEntityTest()
@@ -20,11 +20,11 @@ public class AvroApiSchemaTests : TestBase
 				""fields"": [
 					{
 						""name"": ""Id"",
-						""type"": ""long""
+						""type"": [""null"", ""long""]
 					},
 					{
 						""name"": ""Info"", 
-						""type"": ""string""
+						""type"": [""null"", ""string""]
 					}
 				]
 			}";

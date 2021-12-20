@@ -6,32 +6,28 @@ namespace ClockworkDb.Engine.Serialization.Features;
 
 internal class HeaderDecoder
 {
-    internal string GetSchema(Stream stream)
-    {
-        var reader = new Reader(stream);
+	internal string GetSchema(Stream stream)
+	{
+		var reader = new Reader(stream);
 
-        // validate header 
-        byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+		// validate header 
+		byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
 
-        try
-        {
-            reader.ReadFixed(firstBytes);
-        }
-        catch (EndOfStreamException)
-        {
-            //stream shorter than AvroHeader
-        }
+		try
+		{
+			reader.ReadFixed(firstBytes);
+		}
+		catch (EndOfStreamException)
+		{
+		}
 
-        //does not contain header
-        if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
-        {
-            throw new InvalidAvroObjectException("Object does not contain Avro Header");
-        }
-        else
-        {
-            var header = reader.ReadHeader();
+		//does not contain header
+		if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
+		{
+			throw new InvalidAvroObjectException("Object does not contain Avro Header");
+		}
 
-            return header.GetMetadata(DataFileConstants.SchemaMetadataKey);
-        }
-    }
+		var header = reader.ReadHeader();
+		return header.GetMetadata(DataFileConstants.SchemaMetadataKey);
+	}
 }
