@@ -1,4 +1,6 @@
-namespace ClockworkDb.Engine.Avro.Schema.Management;
+using ClockworkDb.Engine.Avro.SchemaObjects;
+
+namespace ClockworkDb.Engine.Avro.SchemaDefinition;
 
 /// <summary>
 /// Data storage's schema representation.

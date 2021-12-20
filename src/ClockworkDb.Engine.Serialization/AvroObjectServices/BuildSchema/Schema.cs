@@ -54,12 +54,10 @@ internal abstract class Schema
     /// </returns>
     public override string ToString()
     {
-        using (var result = new StringWriter(CultureInfo.InvariantCulture))
-        {
-            var writer = new JsonTextWriter(result);
-            ToJson(writer, new HashSet<NamedSchema>());
-            return result.ToString();
-        }
+        using var result = new StringWriter(CultureInfo.InvariantCulture);
+        var writer = new JsonTextWriter(result);
+        ToJson(writer, new HashSet<NamedSchema>());
+        return result.ToString();
     }
 
     /// <summary>

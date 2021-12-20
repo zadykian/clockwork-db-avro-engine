@@ -21,15 +21,13 @@ public static partial class AvroConvert
     /// </summary>
     public static byte[] Serialize(object obj, CodecType codecType)
     {
-        using (MemoryStream resultStream = new MemoryStream())
+        using MemoryStream resultStream = new MemoryStream();
+        var schema = Schema.Create(obj);
+        using (var writer = new Encoder(schema, resultStream, codecType))
         {
-            var schema = Schema.Create(obj);
-            using (var writer = new Encoder(schema, resultStream, codecType))
-            {
-                writer.Append(obj);
-            }
-            var result = resultStream.ToArray();
-            return result;
+            writer.Append(obj);
         }
+        var result = resultStream.ToArray();
+        return result;
     }
 }

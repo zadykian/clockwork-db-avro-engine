@@ -1,4 +1,4 @@
-namespace ClockworkDb.Engine.Avro.Schema;
+namespace ClockworkDb.Engine.Avro.SchemaObjects;
 
 /// <summary>
 /// Type of a field at a Avro level.

@@ -1,4 +1,4 @@
-namespace ClockworkDb.Engine.Avro.Schema;
+namespace ClockworkDb.Engine.Avro.SchemaObjects;
 
 /// <summary>
 /// Information about type declared in Apache Avro schema.

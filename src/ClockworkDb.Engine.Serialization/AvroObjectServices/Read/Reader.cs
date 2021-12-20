@@ -297,10 +297,8 @@ internal partial class Reader : IReader
 
     internal byte[] ReadToEnd()
     {
-        using (MemoryStream ms = new MemoryStream())
-        {
-            stream.CopyTo(ms);
-            return ms.ToArray();
-        }
+        using MemoryStream ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return ms.ToArray();
     }
 }

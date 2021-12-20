@@ -12,52 +12,50 @@ internal class MergeDecoder
 {
     internal AvroObjectContent ExtractAvroObjectContent(byte[] avroObject)
     {
-        using (var stream = new MemoryStream(avroObject))
+        using var stream = new MemoryStream(avroObject);
+        var reader = new Reader(stream);
+
+        // validate header 
+        byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+
+        try
         {
-            var reader = new Reader(stream);
+            reader.ReadFixed(firstBytes);
+        }
+        catch (EndOfStreamException)
+        {
+            //stream shorter than AvroHeader
+        }
 
-            // validate header 
-            byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+        //does not contain header
+        if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
+        {
+            throw new InvalidAvroObjectException("Object does not contain Avro Header");
+        }
+        else
+        {
+            AvroObjectContent result = new AvroObjectContent();
+            var header = reader.ReadHeader();
+            result.Codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
 
-            try
+            reader.ReadFixed(header.SyncData);
+
+            result.Header = header;
+            result.Header.Schema = Schema.Create(result.Header.GetMetadata(DataFileConstants.SchemaMetadataKey));
+
+            do
             {
-                reader.ReadFixed(firstBytes);
-            }
-            catch (EndOfStreamException)
-            {
-                //stream shorter than AvroHeader
-            }
-
-            //does not contain header
-            if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
-            {
-                throw new InvalidAvroObjectException("Object does not contain Avro Header");
-            }
-            else
-            {
-                AvroObjectContent result = new AvroObjectContent();
-                var header = reader.ReadHeader();
-                result.Codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
-
-                reader.ReadFixed(header.SyncData);
-
-                result.Header = header;
-                result.Header.Schema = Schema.Create(result.Header.GetMetadata(DataFileConstants.SchemaMetadataKey));
-
-                do
+                var blockContent = new DataBlock
                 {
-                    var blockContent = new DataBlock
-                    {
-                        ItemsCount = reader.ReadLong(),
-                        Data = reader.ReadDataBlock(header.SyncData, result.Codec)
-                    };
+                    ItemsCount = reader.ReadLong(),
+                    Data = reader.ReadDataBlock(header.SyncData, result.Codec)
+                };
 
-                    result.DataBlocks.Add(blockContent);
+                result.DataBlocks.Add(blockContent);
 
-                } while (!reader.IsReadToEnd());
+            } while (!reader.IsReadToEnd());
 
-                return result;
-            }
+            return result;
         }
     }
 }

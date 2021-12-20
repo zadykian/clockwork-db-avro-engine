@@ -10,15 +10,13 @@ public static partial class AvroConvert
     /// </summary>
     public static T Deserialize<T>(byte[] avroBytes)
     {
-        using (var stream = new MemoryStream(avroBytes))
-        {
-            var decoder = new Decoder();
-            var deserialized = decoder.Decode<T>(
-                stream,
-                Schema.Create(typeof(T))
-            );
-            return deserialized;
-        }
+        using var stream = new MemoryStream(avroBytes);
+        var decoder = new Decoder();
+        var deserialized = decoder.Decode<T>(
+            stream,
+            Schema.Create(typeof(T))
+        );
+        return deserialized;
     }
 
     /// <summary>
