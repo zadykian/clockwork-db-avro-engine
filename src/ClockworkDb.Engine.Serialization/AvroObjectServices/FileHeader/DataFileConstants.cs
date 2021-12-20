@@ -7,10 +7,13 @@ internal class DataFileConstants
 	internal const string SchemaMetadataKey = "avro.schema";
 	internal const string MetaDataReserved = "avro";
 
-	internal static byte[] AvroHeader = { (byte)'O',
+	internal static byte[] AvroHeader =
+	{
+		(byte)'O',
 		(byte)'b',
 		(byte)'j',
-		(byte) 1 };
+		(byte)1
+	};
 
 	internal const int SyncSize = 16;
 	internal const int DefaultSyncInterval = 4000 * SyncSize;

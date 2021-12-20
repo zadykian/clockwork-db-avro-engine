@@ -1,13 +1,16 @@
-﻿
+﻿using System.IO.Compression;
 
-using System.IO.Compression;
+namespace ClockworkDb.Engine.Serialization.Features;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
-
-internal class GZipCodec : AbstractCodec
+/// <summary>
+/// GZip compressor/decompressor.
+/// </summary>
+internal static class GZipCompressor
 {
-    internal override string Name { get; } = "gzip";
-    internal override byte[] Decompress(byte[] compressedData)
+    /// <summary>
+    /// Decompress sequence of bytes.
+    /// </summary>
+    public static byte[] Decompress(byte[] compressedData)
     {
         using var compressedStream = new MemoryStream(compressedData);
         using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
@@ -16,7 +19,10 @@ internal class GZipCodec : AbstractCodec
         return resultStream.ToArray();
     }
 
-    internal override byte[] Compress(byte[] uncompressedData)
+    /// <summary>
+    /// Compress sequence of bytes.
+    /// </summary>
+    public static byte[] Compress(byte[] uncompressedData)
     {
         using var compressedStream = new MemoryStream();
         using var zipStream = new GZipStream(compressedStream, CompressionMode.Compress);

@@ -22,7 +22,7 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 
 internal sealed class TimeMillisecondsSchema : LogicalTypeSchema
 {
-    private static readonly TimeSpan _maxTime = new(23, 59, 59);
+    private static readonly TimeSpan maxTime = new(23, 59, 59);
 
     public TimeMillisecondsSchema() : this(typeof(TimeSpan))
     {
@@ -39,7 +39,7 @@ internal sealed class TimeMillisecondsSchema : LogicalTypeSchema
     {
         var time = (TimeSpan)logicalValue;
 
-        if (time > _maxTime)
+        if (time > maxTime)
             throw new ArgumentOutOfRangeException(nameof(logicalValue), "A 'time-millis' value can only have the range '00:00:00' to '23:59:59'.");
 
         return (int)(time - DateTimeExtensions.UnixEpochDateTime.TimeOfDay).TotalMilliseconds;

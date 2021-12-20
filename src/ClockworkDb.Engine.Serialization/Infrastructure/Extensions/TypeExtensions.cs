@@ -36,7 +36,7 @@ internal static class TypeExtensions
                    && !(type.IsGenericType() && type.ImplementsSupportedInterface()));
     }
 
-    private static readonly HashSet<Type> NativelySupported = new()
+    private static readonly HashSet<Type> nativelySupported = new()
     {
         typeof(char),
         typeof(byte),
@@ -62,7 +62,7 @@ internal static class TypeExtensions
     internal static bool IsNativelySupported(this Type type)
     {
         var notNullable = Nullable.GetUnderlyingType(type) ?? type;
-        return NativelySupported.Contains(notNullable)
+        return nativelySupported.Contains(notNullable)
                || type.IsArray
                || type.IsKeyValuePair()
                || type.GetAllInterfaces()
@@ -70,7 +70,7 @@ internal static class TypeExtensions
                                         t.GetGenericTypeDefinition() == typeof(IEnumerable<>)) != null;
     }
 
-    private static readonly HashSet<Type> SupportedInterfaces = new()
+    private static readonly HashSet<Type> supportedInterfaces = new()
     {
         typeof(IList<>),
         typeof(IDictionary<,>),
@@ -81,7 +81,7 @@ internal static class TypeExtensions
     {
         foreach (var interfaceType in type.GetInterfaces())
         {
-            if (SupportedInterfaces.Contains(interfaceType.GetGenericTypeDefinition()))
+            if (supportedInterfaces.Contains(interfaceType.GetGenericTypeDefinition()))
             {
                 return true;
             }
@@ -131,13 +131,13 @@ internal static class TypeExtensions
             return Enumerable.Empty<FieldInfo>();
         }
 
-        const BindingFlags Flags =
+        const BindingFlags flags =
             BindingFlags.Public |
             BindingFlags.NonPublic |
             BindingFlags.Instance |
             BindingFlags.DeclaredOnly;
         return t
-            .GetFields(Flags)
+            .GetFields(flags)
             .Where(f => !f.IsDefined(typeof(CompilerGeneratedAttribute), false))
             .Concat(GetAllFields(t.BaseType()));
     }
@@ -149,14 +149,14 @@ internal static class TypeExtensions
             return Enumerable.Empty<PropertyInfo>();
         }
 
-        const BindingFlags Flags =
+        const BindingFlags flags =
             BindingFlags.Public |
             BindingFlags.NonPublic |
             BindingFlags.Instance |
             BindingFlags.DeclaredOnly;
 
         return t
-            .GetProperties(Flags)
+            .GetProperties(flags)
             .Where(p => !p.IsDefined(typeof(CompilerGeneratedAttribute), false)
                         && p.GetIndexParameters().Length == 0)
             .Concat(GetAllProperties(t.BaseType()));

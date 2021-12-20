@@ -13,7 +13,7 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 /// </summary>
 internal sealed class ReflectionSchemaBuilder
 {
-    private static readonly Dictionary<Type, Func<Type, LogicalTypeSchema>> TypeToAvroLogicalSchemaMap =
+    private static readonly Dictionary<Type, Func<Type, LogicalTypeSchema>> typeToAvroLogicalSchemaMap =
         new()
         {
             { typeof(decimal), type => new DecimalSchema(type) },
@@ -24,7 +24,7 @@ internal sealed class ReflectionSchemaBuilder
         };
 
 
-    private static readonly Dictionary<Type, Func<Type, PrimitiveTypeSchema>> TypeToAvroPrimitiveSchemaMap =
+    private static readonly Dictionary<Type, Func<Type, PrimitiveTypeSchema>> typeToAvroPrimitiveSchemaMap =
         new()
         {
             { typeof(AvroNull), type => new NullSchema(type) },
@@ -194,11 +194,11 @@ internal sealed class ReflectionSchemaBuilder
 
     private static TypeSchema TryBuildPrimitiveTypeSchema(Type type)
     {
-        if (!TypeToAvroPrimitiveSchemaMap.ContainsKey(type))
+        if (!typeToAvroPrimitiveSchemaMap.ContainsKey(type))
         {
             return null;
         }
-        return TypeToAvroPrimitiveSchemaMap[type](type);
+        return typeToAvroPrimitiveSchemaMap[type](type);
     }
 
     private static TypeSchema TryBuildLogicalTypeSchema(Type type, MemberInfo info = null)
@@ -208,12 +208,12 @@ internal sealed class ReflectionSchemaBuilder
             return BuildDecimalTypeSchema(type, info);
         }
 
-        if (!TypeToAvroLogicalSchemaMap.ContainsKey(type))
+        if (!typeToAvroLogicalSchemaMap.ContainsKey(type))
         {
             return null;
         }
 
-        return TypeToAvroLogicalSchemaMap[type](type);
+        return typeToAvroLogicalSchemaMap[type](type);
     }
 
     private static TypeSchema BuildDecimalTypeSchema(Type type, MemberInfo info)

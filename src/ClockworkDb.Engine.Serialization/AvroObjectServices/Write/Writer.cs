@@ -5,11 +5,11 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write;
 /// </summary>
 internal partial class Writer : IWriter
 {
-    private readonly Stream _stream;
+    private readonly Stream stream;
 
     internal Writer(Stream stream)
     {
-        _stream = stream;
+        this.stream = stream;
     }
 
     /// <summary>
@@ -148,16 +148,16 @@ internal partial class Writer : IWriter
 
     public void WriteFixed(byte[] data, int start, int len)
     {
-        _stream.Write(data, start, len);
+        stream.Write(data, start, len);
     }
 
     public void WriteBytesRaw(byte[] bytes)
     {
-        _stream.Write(bytes, 0, bytes.Length);
+        stream.Write(bytes, 0, bytes.Length);
     }
 
     private void WriteByte(byte b)
     {
-        _stream.WriteByte(b);
+        stream.WriteByte(b);
     }
 }

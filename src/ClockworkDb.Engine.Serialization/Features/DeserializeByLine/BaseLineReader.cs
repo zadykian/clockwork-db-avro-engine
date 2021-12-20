@@ -1,27 +1,4 @@
-﻿#region license
-/**Copyright (c) 2021 Adrian Strugala
-*
-* Licensed under the CC BY-NC-SA 3.0 License(the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* https://creativecommons.org/licenses/by-nc-sa/3.0/
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* You are free to use or modify the code for personal usage.
-* For commercial usage purchase the product at
-*
-* https://xabe.net/product/avroconvert/
-*/
-#endregion
-
-using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
-using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
+﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Features.DeserializeByLine.LineReaders;
@@ -30,20 +7,18 @@ namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine;
 
 internal class BaseLineReader<T> : ILineReader<T>
 {
-    private readonly Reader _reader;
-    private readonly byte[] _syncDate;
-    private readonly AbstractCodec _codec;
-    private readonly TypeSchema _writeSchema;
-    private readonly TypeSchema _readSchema;
-    private ILineReader<T> _lineReaderInternal;
+    private readonly Reader reader;
+    private readonly byte[] syncDate;
+    private readonly TypeSchema writeSchema;
+    private readonly TypeSchema readSchema;
+    private ILineReader<T> lineReaderInternal;
 
-    internal BaseLineReader(Reader reader, byte[] syncDate, AbstractCodec codec, TypeSchema writeSchema, TypeSchema readSchema)
+    internal BaseLineReader(Reader reader, byte[] syncDate, TypeSchema writeSchema, TypeSchema readSchema)
     {
-        _reader = reader;
-        _syncDate = syncDate;
-        _codec = codec;
-        _writeSchema = writeSchema;
-        _readSchema = readSchema;
+        this.reader = reader;
+        this.syncDate = syncDate;
+        this.writeSchema = writeSchema;
+        this.readSchema = readSchema;
 
         LoadNextDataBlock();
     }
@@ -51,16 +26,16 @@ internal class BaseLineReader<T> : ILineReader<T>
 
     public bool HasNext()
     {
-        var hasNext = _lineReaderInternal.HasNext();
+        var hasNext = lineReaderInternal.HasNext();
 
         if (!hasNext)
         {
-            hasNext = !_reader.IsReadToEnd();
+            hasNext = !reader.IsReadToEnd();
 
             if (hasNext)
             {
                 LoadNextDataBlock();
-                return _lineReaderInternal.HasNext();
+                return lineReaderInternal.HasNext();
             }
         }
 
@@ -69,36 +44,36 @@ internal class BaseLineReader<T> : ILineReader<T>
 
     private void LoadNextDataBlock()
     {
-        var resolver = new Resolver(_writeSchema, _readSchema);
+        var resolver = new Resolver(writeSchema, readSchema);
 
-        var itemsCount = _reader.ReadLong();
+        var itemsCount = reader.ReadLong();
 
-        var dataBlock = _reader.ReadDataBlock(_syncDate, _codec);
+        var dataBlock = reader.ReadDataBlock(syncDate);
         var dataReader = new Reader(new MemoryStream(dataBlock));
 
 
         if (itemsCount > 1)
         {
-            _lineReaderInternal = new BlockLineReader<T>(dataReader, resolver, itemsCount);
+            lineReaderInternal = new BlockLineReader<T>(dataReader, resolver, itemsCount);
             return;
         }
 
-        if (_writeSchema.Type == AvroType.Array)
+        if (writeSchema.Type == AvroType.Array)
         {
-            _lineReaderInternal = new ListLineReader<T>(dataReader, new Resolver(((ArraySchema)_writeSchema).ItemSchema, _readSchema));
+            lineReaderInternal = new ListLineReader<T>(dataReader, new Resolver(((ArraySchema)writeSchema).ItemSchema, readSchema));
             return;
         }
 
-        _lineReaderInternal = new RecordLineReader<T>(dataReader, resolver);
+        lineReaderInternal = new RecordLineReader<T>(dataReader, resolver);
     }
 
     public T ReadNext()
     {
-        return _lineReaderInternal.ReadNext();
+        return lineReaderInternal.ReadNext();
     }
 
     public void Dispose()
     {
-        _lineReaderInternal.Dispose();
+        lineReaderInternal.Dispose();
     }
 }

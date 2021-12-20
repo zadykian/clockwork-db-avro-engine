@@ -2,7 +2,7 @@
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features.GetSchema;
+namespace ClockworkDb.Engine.Serialization.Features;
 
 internal class HeaderDecoder
 {

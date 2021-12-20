@@ -27,11 +27,6 @@ internal sealed class AvroEnum
     }
 
     /// <summary>
-    /// Gets the schema.
-    /// </summary>
-    internal EnumSchema Schema => schema;
-
-    /// <summary>
     /// Gets or sets the value.
     /// </summary>
     internal string Value

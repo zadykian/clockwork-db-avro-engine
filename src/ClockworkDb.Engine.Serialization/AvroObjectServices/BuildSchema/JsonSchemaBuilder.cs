@@ -11,7 +11,7 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 /// </summary>
 internal sealed class JsonSchemaBuilder
 {
-    private static readonly Dictionary<string, Func<PrimitiveTypeSchema>> PrimitiveRuntimeType
+    private static readonly Dictionary<string, Func<PrimitiveTypeSchema>> primitiveRuntimeType
         = new(comparer: StringComparer.InvariantCultureIgnoreCase)
         {
             { "null", () => new NullSchema() },
@@ -24,7 +24,7 @@ internal sealed class JsonSchemaBuilder
             { "string", () => new StringSchema() },
         };
 
-    private static readonly Dictionary<string, SortOrder> SortValue = new()
+    private static readonly Dictionary<string, SortOrder> sortValue = new()
     {
         { SortOrder.Ascending.ToString().ToUpperInvariant(), SortOrder.Ascending },
         { SortOrder.Descending.ToString().ToUpperInvariant(), SortOrder.Descending },
@@ -136,7 +136,7 @@ internal sealed class JsonSchemaBuilder
                     return ParseFixedType(token, parent);
                 default:
                 {
-                    if (PrimitiveRuntimeType.ContainsKey(type.ToString()))
+                    if (primitiveRuntimeType.ContainsKey(type.ToString()))
                     {
                         return ParsePrimitiveTypeFromObject(token);
                     }
@@ -392,12 +392,12 @@ internal sealed class JsonSchemaBuilder
         var orderValue = SortOrder.Ascending;
         if (!string.IsNullOrEmpty(order))
         {
-            if (!SortValue.ContainsKey(order.ToUpperInvariant()))
+            if (!sortValue.ContainsKey(order.ToUpperInvariant()))
             {
                 throw new SerializationException(
                     string.Format(CultureInfo.InvariantCulture, "Invalid sort order of the field '{0}'.", order));
             }
-            orderValue = SortValue[order.ToUpperInvariant()];
+            orderValue = sortValue[order.ToUpperInvariant()];
         }
 
         var fieldName = new SchemaName(name);
@@ -441,7 +441,7 @@ internal sealed class JsonSchemaBuilder
     /// <returns>Schema internal representation.</returns>
     private TypeSchema CreatePrimitiveTypeSchema(string type, Dictionary<string, string> attributes)
     {
-        var result = PrimitiveRuntimeType[type]();
+        var result = primitiveRuntimeType[type]();
         foreach (var attribute in attributes)
         {
             result.AddAttribute(attribute.Key, attribute.Value);

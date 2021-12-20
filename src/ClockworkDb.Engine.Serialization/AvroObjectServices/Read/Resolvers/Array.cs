@@ -10,7 +10,7 @@ namespace SolTechnology.Avro.AvroObjectServices.Read;
 
 internal partial class Resolver
 {
-    private readonly Dictionary<int, Func<IList>> _cachedArrayInitializers = new();
+    private readonly Dictionary<int, Func<IList>> cachedArrayInitializers = new();
 
     internal object ResolveArray(TypeSchema writerSchema, TypeSchema readerSchema, IReader d, Type type, long itemsCount = 0)
     {
@@ -29,15 +29,15 @@ internal partial class Resolver
         var typeHash = type.GetHashCode();
 
         Func<IList> resultFunc;
-        if (_cachedArrayInitializers.ContainsKey(typeHash))
+        if (cachedArrayInitializers.ContainsKey(typeHash))
         {
-            resultFunc = _cachedArrayInitializers[typeHash];
+            resultFunc = cachedArrayInitializers[typeHash];
         }
         else
         {
             var resultType = typeof(List<>).MakeGenericType(containingType);
             resultFunc = Expression.Lambda<Func<IList>>(Expression.New(resultType)).Compile();
-            _cachedArrayInitializers.Add(typeHash, resultFunc);
+            cachedArrayInitializers.Add(typeHash, resultFunc);
         }
         IList result = resultFunc.Invoke();
 

@@ -16,9 +16,9 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 internal class AvroContractResolver
 {
 
-    private readonly bool _allowNullable;
-    private readonly bool _useAlphabeticalOrder;
-    private readonly bool _includeOnlyDataContractMembers;
+    private readonly bool allowNullable;
+    private readonly bool useAlphabeticalOrder;
+    private readonly bool includeOnlyDataContractMembers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AvroContractResolver"/> class.
@@ -29,9 +29,9 @@ internal class AvroContractResolver
     /// <param name="includeOnlyDataContractMembers">If set to <c>true</c> members without DataMemberAttribute won't be taken into consideration in serialization/deserialization.</param>
     internal AvroContractResolver(bool allowNullable = false, bool useAlphabeticalOrder = false, bool includeOnlyDataContractMembers = false)
     {
-        _allowNullable = allowNullable;
-        _useAlphabeticalOrder = useAlphabeticalOrder;
-        _includeOnlyDataContractMembers = includeOnlyDataContractMembers;
+        this.allowNullable = allowNullable;
+        this.useAlphabeticalOrder = useAlphabeticalOrder;
+        this.includeOnlyDataContractMembers = includeOnlyDataContractMembers;
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ internal class AvroContractResolver
                 string.Format(CultureInfo.InvariantCulture, "Type '{0}' is not supported by the resolver.", type));
         }
 
-        bool isNullable = _allowNullable || type.CanContainNull() || (!type.IsValueType && member?.IsNullableReferenceType() == true);
+        bool isNullable = allowNullable || type.CanContainNull() || (!type.IsValueType && member?.IsNullableReferenceType() == true);
 
         if (type.IsInterface() ||
             type.IsNativelySupported() ||
@@ -94,7 +94,7 @@ internal class AvroContractResolver
 
         var attributes = type.GetTypeInfo().GetCustomAttributes(false);
         var dataContract = attributes.OfType<DataContractAttribute>().SingleOrDefault();
-        if (dataContract == null && _includeOnlyDataContractMembers)
+        if (dataContract == null && includeOnlyDataContractMembers)
         {
             throw new SerializationException(
                 string.Format(CultureInfo.InvariantCulture, "Type '{0}' is not supported by the resolver.", type));
@@ -184,7 +184,7 @@ internal class AvroContractResolver
             });
 
 
-        if (_includeOnlyDataContractMembers)
+        if (includeOnlyDataContractMembers)
         {
             members = members.Where(m => m.Attribute != null);
         }
@@ -201,7 +201,7 @@ internal class AvroContractResolver
         });
 
 
-        if (_useAlphabeticalOrder)
+        if (useAlphabeticalOrder)
         {
             result = result.OrderBy(p => p.Name);
         }

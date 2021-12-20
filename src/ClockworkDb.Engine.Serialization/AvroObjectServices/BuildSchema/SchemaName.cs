@@ -9,8 +9,8 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 /// </summary>
 internal sealed class SchemaName : IComparable<SchemaName>, IEquatable<SchemaName>
 {
-    private static readonly Regex NamePattern = new("^[A-Za-z_][A-Za-z0-9_]*$");
-    private static readonly Regex NamespacePattern = new("^([A-Za-z_][A-Za-z0-9_]*)?(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$");
+    private static readonly Regex namePattern = new("^[A-Za-z_][A-Za-z0-9_]*$");
+    private static readonly Regex namespacePattern = new("^([A-Za-z_][A-Za-z0-9_]*)?(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$");
 
     private readonly string name;
     private readonly string @namespace;
@@ -137,13 +137,13 @@ internal sealed class SchemaName : IComparable<SchemaName>, IEquatable<SchemaNam
 
     private void CheckNameAndNamespace()
     {
-        if (!NamePattern.IsMatch(name))
+        if (!namePattern.IsMatch(name))
         {
             throw new SerializationException(
                 string.Format(CultureInfo.InvariantCulture, "Name '{0}' contains invalid characters.", name));
         }
 
-        if (!NamespacePattern.IsMatch(@namespace))
+        if (!namespacePattern.IsMatch(@namespace))
         {
             throw new SerializationException(
                 string.Format(CultureInfo.InvariantCulture, "Namespace '{0}' contains invalid characters.", @namespace));

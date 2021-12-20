@@ -7,16 +7,16 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 
 internal partial class Resolver
 {
-    private readonly Skipper _skipper;
-    private readonly TypeSchema _readerSchema;
-    private readonly TypeSchema _writerSchema;
+    private readonly Skipper skipper;
+    private readonly TypeSchema readerSchema;
+    private readonly TypeSchema writerSchema;
 
     internal Resolver(TypeSchema writerSchema, TypeSchema readerSchema)
     {
-        _readerSchema = readerSchema;
-        _writerSchema = writerSchema;
+        this.readerSchema = readerSchema;
+        this.writerSchema = writerSchema;
 
-        _skipper = new Skipper();
+        skipper = new Skipper();
     }
 
     internal T Resolve<T>(IReader reader, long itemsCount = 0)
@@ -24,12 +24,12 @@ internal partial class Resolver
         if (itemsCount > 1)
         {
             return (T)ResolveArray(
-                _writerSchema,
-                _readerSchema,
+                writerSchema,
+                readerSchema,
                 reader, typeof(T), itemsCount);
         }
 
-        var result = Resolve(_writerSchema, _readerSchema, reader, typeof(T));
+        var result = Resolve(writerSchema, readerSchema, reader, typeof(T));
         return (T)result;
     }
 

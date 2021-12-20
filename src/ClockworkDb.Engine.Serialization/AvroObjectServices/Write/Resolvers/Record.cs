@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
-using ClockworkDb.Engine.Serialization.Features.Serialize;
+using ClockworkDb.Engine.Serialization.Features;
 using RecordSchema = ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.RecordSchema;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;

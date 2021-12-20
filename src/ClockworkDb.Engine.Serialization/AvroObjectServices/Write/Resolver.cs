@@ -1,7 +1,7 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Write.Resolvers;
-using ClockworkDb.Engine.Serialization.Features.Serialize;
+using ClockworkDb.Engine.Serialization.Features;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Write;
@@ -10,35 +10,35 @@ internal static class Resolver
 {
     internal delegate void Writer<in T>(T t);
 
-    private static readonly Array Array;
-    private static readonly Map Map;
-    private static readonly Null Null;
-    private static readonly String String;
-    private static readonly Record Record;
-    private static readonly Enum Enum;
-    private static readonly Fixed Fixed;
-    private static readonly Union Union;
-    private static readonly Long Long;
-    private static readonly Uuid Uuid;
-    private static readonly Decimal Decimal;
-    private static readonly Duration Duration;
-    private static readonly TimestampMilliseconds TimestampMilliseconds;
+    private static readonly Array array;
+    private static readonly Map map;
+    private static readonly Null @null;
+    private static readonly String @string;
+    private static readonly Record record;
+    private static readonly Enum @enum;
+    private static readonly Fixed @fixed;
+    private static readonly Union union;
+    private static readonly Long @long;
+    private static readonly Uuid uuid;
+    private static readonly Decimal @decimal;
+    private static readonly Duration duration;
+    private static readonly TimestampMilliseconds timestampMilliseconds;
 
     static Resolver()
     {
-        Array = new Array();
-        Null = new Null();
-        Map = new Map();
-        String = new String();
-        Record = new Record();
-        Enum = new Enum();
-        Fixed = new Fixed();
-        Union = new Union();
-        Long = new Long();
-        Uuid = new Uuid();
-        Decimal = new Decimal();
-        Duration = new Duration();
-        TimestampMilliseconds = new TimestampMilliseconds();
+        array = new Array();
+        @null = new Null();
+        map = new Map();
+        @string = new String();
+        record = new Record();
+        @enum = new Enum();
+        @fixed = new Fixed();
+        union = new Union();
+        @long = new Long();
+        uuid = new Uuid();
+        @decimal = new Decimal();
+        duration = new Duration();
+        timestampMilliseconds = new TimestampMilliseconds();
     }
 
     internal static Encoder.WriteItem ResolveWriter(TypeSchema schema)
@@ -46,19 +46,19 @@ internal static class Resolver
         switch (schema.Type)
         {
             case AvroType.Null:
-                return Null.Resolve;
+                return @null.Resolve;
             case AvroType.Boolean:
                 return (v, e) => Write<bool>(v, schema.Type, e.WriteBoolean);
             case AvroType.Int:
                 return (v, e) => Write<int>(v, schema.Type, e.WriteInt);
             case AvroType.Long:
-                return Long.Resolve;
+                return @long.Resolve;
             case AvroType.Float:
                 return (v, e) => Write<float>(v, schema.Type, e.WriteFloat);
             case AvroType.Double:
                 return (v, e) => Write<double>(v, schema.Type, e.WriteDouble);
             case AvroType.String:
-                return String.Resolve;
+                return @string.Resolve;
             case AvroType.Bytes:
                 return (v, e) => Write<byte[]>(v, schema.Type, e.WriteBytes);
             case AvroType.Error:
@@ -68,28 +68,28 @@ internal static class Resolver
                 switch (logicalTypeSchema.LogicalTypeName)
                 {
                     case LogicalTypeSchema.LogicalTypeEnum.Uuid:
-                        return Uuid.Resolve((UuidSchema)logicalTypeSchema);
+                        return uuid.Resolve((UuidSchema)logicalTypeSchema);
                     case LogicalTypeSchema.LogicalTypeEnum.Decimal:
-                        return Decimal.Resolve((DecimalSchema)logicalTypeSchema);
+                        return @decimal.Resolve((DecimalSchema)logicalTypeSchema);
                     case LogicalTypeSchema.LogicalTypeEnum.TimestampMilliseconds:
-                        return TimestampMilliseconds.Resolve((TimestampMillisecondsSchema)logicalTypeSchema);
+                        return timestampMilliseconds.Resolve((TimestampMillisecondsSchema)logicalTypeSchema);
                     case LogicalTypeSchema.LogicalTypeEnum.Duration:
-                        return Duration.Resolve((DurationSchema)logicalTypeSchema);
+                        return duration.Resolve((DurationSchema)logicalTypeSchema);
                 }
             }
-                return String.Resolve;
+                return @string.Resolve;
             case AvroType.Record:
-                return Record.Resolve((RecordSchema)schema);
+                return record.Resolve((RecordSchema)schema);
             case AvroType.Enum:
-                return Enum.Resolve((EnumSchema)schema);
+                return @enum.Resolve((EnumSchema)schema);
             case AvroType.Fixed:
-                return Fixed.Resolve((FixedSchema)schema);
+                return @fixed.Resolve((FixedSchema)schema);
             case AvroType.Array:
-                return Array.Resolve((ArraySchema)schema);
+                return array.Resolve((ArraySchema)schema);
             case AvroType.Map:
-                return Map.Resolve((MapSchema)schema);
+                return map.Resolve((MapSchema)schema);
             case AvroType.Union:
-                return Union.Resolve((UnionSchema)schema);
+                return union.Resolve((UnionSchema)schema);
             default:
                 return (v, e) =>
                     throw new AvroTypeMismatchException(
@@ -104,17 +104,17 @@ internal static class Resolver
     /// <param name="value">The value to be serialized</param>
     /// <param name="tag">The schema type tag</param>
     /// <param name="writer">The writer which should be used to write the given type.</param>
-    private static void Write<S>(object value, AvroType tag, Writer<S> writer)
+    private static void Write<TS>(object value, AvroType tag, Writer<TS> writer)
     {
         if (value == null)
         {
-            value = default(S);
+            value = default(TS);
         }
 
-        if (!(value is S))
+        if (!(value is TS))
             throw new AvroTypeMismatchException(
-                $"[{typeof(S)}] required to write against [{tag}] schema but found " + value?.GetType());
+                $"[{typeof(TS)}] required to write against [{tag}] schema but found " + value?.GetType());
 
-        writer((S)value);
+        writer((TS)value);
     }
 }

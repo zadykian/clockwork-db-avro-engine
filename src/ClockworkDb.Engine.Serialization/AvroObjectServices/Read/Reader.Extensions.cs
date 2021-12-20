@@ -1,5 +1,5 @@
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
-using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
+using ClockworkDb.Engine.Serialization.Features;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
@@ -27,11 +27,11 @@ internal partial class Reader : IReader
         return header;
     }
 
-    internal byte[] ReadDataBlock(byte[] syncData, AbstractCodec codec)
+    internal byte[] ReadDataBlock(byte[] syncData)
     {
         var dataBlock = ReadRawBlock();
         ReadAndValidateSync(syncData);
-        dataBlock = codec.Decompress(dataBlock);
+        dataBlock = GZipCompressor.Decompress(dataBlock);
 
         return dataBlock;
     }
@@ -46,7 +46,7 @@ internal partial class Reader : IReader
         return dataBlock;
     }
 
-    internal void ReadAndValidateSync(byte[] expectedSync)
+    private void ReadAndValidateSync(IEnumerable<byte> expectedSync)
     {
         var syncBuffer = new byte[DataFileConstants.SyncSize];
         ReadFixed(syncBuffer);

@@ -4,7 +4,7 @@ namespace ClockworkDb.Engine.Serialization.Infrastructure.Extensions;
 
 internal static class MemberInfoExtensions
 {
-    private static readonly byte[] EmptyFlags = {0};
+    private static readonly byte[] emptyFlags = {0};
 
     internal static bool IsNullableReferenceType(this MemberInfo member)
     {
@@ -23,7 +23,7 @@ internal static class MemberInfoExtensions
         {
             return (byte[]) nullableAttribute.GetType()
                 .GetRuntimeField("NullableFlags")?
-                .GetValue(nullableAttribute) ?? EmptyFlags;
+                .GetValue(nullableAttribute) ?? emptyFlags;
         }
 
         var nullableContextAttribute = member.DeclaringType?
@@ -39,6 +39,6 @@ internal static class MemberInfoExtensions
             return new[] {(byte) value};
         }
 
-        return EmptyFlags;
+        return emptyFlags;
     }
 }

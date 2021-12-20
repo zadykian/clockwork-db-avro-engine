@@ -26,12 +26,12 @@ namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 
 internal class FixedModel
 {
-    protected readonly byte[] _value;
-    private FixedSchema _schema;
+    protected readonly byte[] Value;
+    private FixedSchema schema;
 
     internal FixedSchema Schema
     {
-        get => _schema;
+        get => schema;
 
         set
         {
@@ -41,7 +41,7 @@ internal class FixedModel
             if ((value as FixedSchema).Size != _value.Length)
                 throw new AvroException("Schema " + value.Name + " Size " + (value as FixedSchema).Size + "is not equal to bytes length " + _value.Length);
 
-            _schema = value;
+            schema = value;
         }
     }
 

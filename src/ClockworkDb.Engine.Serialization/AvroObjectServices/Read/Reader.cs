@@ -53,7 +53,7 @@ internal partial class Reader : IReader
     /// <returns></returns>
     public bool ReadBoolean()
     {
-        byte b = read();
+        byte b = Read();
         if (b == 0) return false;
         if (b == 1) return true;
         throw new AvroException("Not a boolean value in the stream: " + b);
@@ -75,12 +75,12 @@ internal partial class Reader : IReader
     /// <returns></returns>
     public long ReadLong()
     {
-        byte b = read();
+        byte b = Read();
         ulong n = b & 0x7FUL;
         int shift = 7;
         while ((b & 0x80) != 0)
         {
-            b = read();
+            b = Read();
             n |= (b & 0x7FUL) << shift;
             shift += 7;
         }
@@ -96,7 +96,7 @@ internal partial class Reader : IReader
     /// <returns></returns>
     public float ReadFloat()
     {
-        byte[] buffer = read(4);
+        byte[] buffer = Read(4);
 
         if (!BitConverter.IsLittleEndian)
             Array.Reverse(buffer);
@@ -136,7 +136,7 @@ internal partial class Reader : IReader
     /// <returns></returns>
     public byte[] ReadBytes()
     {
-        return read(ReadLong());
+        return Read(ReadLong());
     }
 
     public string ReadString()
@@ -154,22 +154,22 @@ internal partial class Reader : IReader
 
     public long ReadArrayStart()
     {
-        return doReadItemCount();
+        return DoReadItemCount();
     }
 
     public long ReadArrayNext()
     {
-        return doReadItemCount();
+        return DoReadItemCount();
     }
 
     public long ReadMapStart()
     {
-        return doReadItemCount();
+        return DoReadItemCount();
     }
 
     public long ReadMapNext()
     {
-        return doReadItemCount();
+        return DoReadItemCount();
     }
 
     public int ReadUnionIndex()
@@ -244,19 +244,19 @@ internal partial class Reader : IReader
     }
 
     // Read p bytes into a new byte buffer
-    private byte[] read(long p)
+    private byte[] Read(long p)
     {
         byte[] buffer = new byte[p];
         Read(buffer, 0, buffer.Length);
         return buffer;
     }
 
-    private static float intBitsToFloat(int value)
+    private static float IntBitsToFloat(int value)
     {
         return BitConverter.ToSingle(BitConverter.GetBytes(value), 0);
     }
 
-    private byte read()
+    private byte Read()
     {
         int n = stream.ReadByte();
         if (n >= 0) return (byte)n;
@@ -274,7 +274,7 @@ internal partial class Reader : IReader
         }
     }
 
-    private long doReadItemCount()
+    private long DoReadItemCount()
     {
         long result = ReadLong();
         if (result < 0)
