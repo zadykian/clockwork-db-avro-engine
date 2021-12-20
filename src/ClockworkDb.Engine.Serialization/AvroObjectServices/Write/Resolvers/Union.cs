@@ -21,12 +21,6 @@ internal class Union
         return (v, e) => WriteUnion(unionSchema, branchSchemas, branchWriters, v, e);
     }
 
-    /*TODO:
-     * FIXME: This method of determining the Union branch has problems. If the data is IDictionary<string, object>
-     * if there are two branches one with record schema and the other with map, it choose the first one. Similarly if
-     * the data is byte[] and there are fixed and bytes schemas as branches, it choose the first one that matches.
-     * Also it does not recognize the arrays of primitive types.
-     */
     private bool UnionBranchMatches(TypeSchema sc, object obj)
     {
         if (obj == null && sc.Type != AvroType.Null) return false;

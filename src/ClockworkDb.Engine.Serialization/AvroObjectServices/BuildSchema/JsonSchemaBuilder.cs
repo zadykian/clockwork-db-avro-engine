@@ -293,19 +293,6 @@ internal sealed class JsonSchemaBuilder
             case LogicalTypeSchema.LogicalTypeEnum.Duration:
                 result = new DurationSchema();
                 break;
-            // todo: remove
-            // case LogicalTypeSchema.LogicalTypeEnum.TimestampMilliseconds:
-            //     result = new TimestampMillisecondsSchema();
-            //     break;
-            // case LogicalTypeSchema.LogicalTypeEnum.TimestampMicroseconds:
-            //     result = new TimestampMicrosecondsSchema();
-            //     break;
-            // case LogicalTypeSchema.LogicalTypeEnum.TimeMilliseconds:
-            //     result = new TimeMillisecondsSchema();
-            //     break;
-            // case LogicalTypeSchema.LogicalTypeEnum.TimeMicrosecond:
-            //     result = new TimeMicrosecondsSchema();
-            //     break;
             case LogicalTypeSchema.LogicalTypeEnum.Date:
                 result = new DateSchema();
                 break;

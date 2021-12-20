@@ -31,7 +31,7 @@ public static class ApacheAvroApi
 	public static async ValueTask<T> DeserializeAsync<T>(IEnumerable<byte> avroBytes)
 	{
 		await using var stream = new MemoryStream(avroBytes.ToArray());
-		return new Decoder().Decode<T>(stream, Schema.Create(typeof(T)));
+		return Decoder.Decode<T>(stream, Schema.Create(typeof(T)));
 	}
 
 	/// <summary>

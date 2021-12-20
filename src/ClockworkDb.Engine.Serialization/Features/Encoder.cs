@@ -3,119 +3,118 @@ using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Write;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features
+namespace ClockworkDb.Engine.Serialization.Features;
+
+internal class Encoder : IDisposable
 {
-    internal class Encoder : IDisposable
+    internal delegate void WriteItem(object value, IWriter encoder);
+
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    private readonly TypeSchema schema;
+    private readonly Stream stream;
+    private MemoryStream tempBuffer;
+    private readonly Writer writer;
+    private IWriter tempWriter;
+    private readonly WriteItem writeItem;
+    private bool isOpen;
+    private bool headerWritten;
+    private int blockCount;
+    private readonly int syncInterval;
+    private readonly Header header;
+
+
+    internal Encoder(TypeSchema schema, Stream outStream)
     {
-        internal delegate void WriteItem(object value, IWriter encoder);
+        stream = outStream;
+        header = new Header();
+        this.schema = schema;
+        syncInterval = DataFileConstants.DefaultSyncInterval;
 
-        private readonly TypeSchema _schema;
-        private readonly Stream _stream;
-        private MemoryStream _tempBuffer;
-        private readonly Writer _writer;
-        private IWriter _tempWriter;
-        private readonly WriteItem _writeItem;
-        private bool _isOpen;
-        private bool _headerWritten;
-        private int _blockCount;
-        private readonly int _syncInterval;
-        private readonly Header _header;
+        blockCount = 0;
+        writer = new Writer(stream);
+        tempBuffer = new MemoryStream();
+        tempWriter = new Writer(tempBuffer);
 
+        GenerateSyncData();
+        header.AddMetadata(DataFileConstants.CodecMetadataKey, "gzip");
+        header.AddMetadata(DataFileConstants.SchemaMetadataKey, this.schema.ToString());
 
-        internal Encoder(TypeSchema schema, Stream outStream)
+        writeItem = Resolver.ResolveWriter(schema);
+
+        isOpen = true;
+    }
+
+    internal void Append(object datum)
+    {
+        AssertOpen();
+        EnsureHeader();
+
+        writeItem(datum, tempWriter);
+
+        blockCount++;
+        WriteIfBlockFull();
+    }
+
+    private void EnsureHeader()
+    {
+        if (!headerWritten)
         {
-            _stream = outStream;
-            _header = new Header();
-            _schema = schema;
-            _syncInterval = DataFileConstants.DefaultSyncInterval;
-
-            _blockCount = 0;
-            _writer = new Writer(_stream);
-            _tempBuffer = new MemoryStream();
-            _tempWriter = new Writer(_tempBuffer);
-
-            GenerateSyncData();
-            _header.AddMetadata(DataFileConstants.CodecMetadataKey, "gzip");
-            _header.AddMetadata(DataFileConstants.SchemaMetadataKey, _schema.ToString());
-
-            _writeItem = Resolver.ResolveWriter(schema);
-
-            _isOpen = true;
+            WriteHeader();
+            headerWritten = true;
         }
+    }
 
-        internal void Append(object datum)
-        {
-            AssertOpen();
-            EnsureHeader();
+    private void Sync()
+    {
+        AssertOpen();
+        WriteBlock();
+    }
 
-            _writeItem(datum, _tempWriter);
+    private void WriteHeader()
+    {
+        writer.WriteHeader(header);
+    }
 
-            _blockCount++;
-            WriteIfBlockFull();
-        }
+    private void AssertOpen()
+    {
+        if (!isOpen) throw new AvroRuntimeException("Cannot complete operation: avro file/stream not open");
+    }
 
-        private void EnsureHeader()
-        {
-            if (!_headerWritten)
-            {
-                WriteHeader();
-                _headerWritten = true;
-            }
-        }
-
-        internal long Sync()
-        {
-            AssertOpen();
+    private void WriteIfBlockFull()
+    {
+        if (tempBuffer.Position >= syncInterval)
             WriteBlock();
-            return _stream.Position;
-        }
+    }
 
-        private void WriteHeader()
+    private void WriteBlock()
+    {
+        if (blockCount > 0)
         {
-            _writer.WriteHeader(_header);
+            byte[] dataToWrite = tempBuffer.ToArray();
+
+            writer.WriteDataBlock(GZipCompressor.Compress(dataToWrite), header.SyncData, blockCount);
+
+            // reset block buffer
+            blockCount = 0;
+            tempBuffer = new MemoryStream();
+            tempWriter = new Writer(tempBuffer);
         }
+    }
 
-        private void AssertOpen()
-        {
-            if (!_isOpen) throw new AvroRuntimeException("Cannot complete operation: avro file/stream not open");
-        }
+    private void GenerateSyncData()
+    {
+        header.SyncData = new byte[16];
 
-        private void WriteIfBlockFull()
-        {
-            if (_tempBuffer.Position >= _syncInterval)
-                WriteBlock();
-        }
+        Random random = new Random();
+        random.NextBytes(header.SyncData);
+    }
 
-        private void WriteBlock()
-        {
-            if (_blockCount > 0)
-            {
-                byte[] dataToWrite = _tempBuffer.ToArray();
-
-                _writer.WriteDataBlock(GZipCompressor.Compress(dataToWrite), _header.SyncData, _blockCount);
-
-                // reset block buffer
-                _blockCount = 0;
-                _tempBuffer = new MemoryStream();
-                _tempWriter = new Writer(_tempBuffer);
-            }
-        }
-
-        private void GenerateSyncData()
-        {
-            _header.SyncData = new byte[16];
-
-            Random random = new Random();
-            random.NextBytes(_header.SyncData);
-        }
-
-        public void Dispose()
-        {
-            EnsureHeader();
-            Sync();
-            _stream.Flush();
-            _stream.Dispose();
-            _isOpen = false;
-        }
+    public void Dispose()
+    {
+        EnsureHeader();
+        Sync();
+        stream.Flush();
+        stream.Dispose();
+        isOpen = false;
     }
 }
