@@ -20,76 +20,73 @@
 /** Modifications copyright(C) 2020 Adrian Strugała **/
 #endregion
 
-using System;
-using System.Linq;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
+
+internal class FixedModel
 {
-    internal class FixedModel
+    protected readonly byte[] _value;
+    private FixedSchema _schema;
+
+    internal FixedSchema Schema
     {
-        protected readonly byte[] _value;
-        private FixedSchema _schema;
+        get => _schema;
 
-        internal FixedSchema Schema
+        set
         {
-            get => _schema;
+            if (!(value is FixedSchema))
+                throw new AvroException("Schema " + value.Name + " in set is not FixedSchema");
 
-            set
+            if ((value as FixedSchema).Size != _value.Length)
+                throw new AvroException("Schema " + value.Name + " Size " + (value as FixedSchema).Size + "is not equal to bytes length " + _value.Length);
+
+            _schema = value;
+        }
+    }
+
+    internal FixedModel(FixedSchema schema)
+    {
+        _value = new byte[schema.Size];
+        Schema = schema;
+    }
+
+    internal FixedModel(FixedSchema schema, byte[] value)
+    {
+        _value = new byte[schema.Size];
+        Schema = schema;
+        Value = value;
+    }
+
+    protected FixedModel(uint size)
+    {
+        _value = new byte[size];
+    }
+
+    internal byte[] Value
+    {
+        get => _value;
+        set
+        {
+            if (value.Length == _value.Length)
             {
-                if (!(value is FixedSchema))
-                    throw new AvroException("Schema " + value.Name + " in set is not FixedSchema");
-
-                if ((value as FixedSchema).Size != _value.Length)
-                    throw new AvroException("Schema " + value.Name + " Size " + (value as FixedSchema).Size + "is not equal to bytes length " + this._value.Length);
-
-                _schema = value;
+                Array.Copy(value, _value, value.Length);
+                return;
             }
+            throw new AvroException("Invalid length for fixed: " + value.Length + ", (" + Schema + ")");
         }
+    }
 
-        internal FixedModel(FixedSchema schema)
-        {
-            _value = new byte[schema.Size];
-            Schema = schema;
-        }
+    public override bool Equals(object obj)
+    {
+        if (this == obj) return true;
+        if (obj == null || !(obj is FixedModel that)) return false;
+        if (!that.Schema.Equals(Schema)) return false;
+        return !_value.Where((t, i) => _value[i] != that._value[i]).Any();
+    }
 
-        internal FixedModel(FixedSchema schema, byte[] value)
-        {
-            this._value = new byte[schema.Size];
-            Schema = schema;
-            Value = value;
-        }
-
-        protected FixedModel(uint size)
-        {
-            this._value = new byte[size];
-        }
-
-        internal byte[] Value
-        {
-            get => _value;
-            set
-            {
-                if (value.Length == this._value.Length)
-                {
-                    Array.Copy(value, this._value, value.Length);
-                    return;
-                }
-                throw new AvroException("Invalid length for fixed: " + value.Length + ", (" + Schema + ")");
-            }
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (this == obj) return true;
-            if (obj == null || !(obj is FixedModel that)) return false;
-            if (!that.Schema.Equals(Schema)) return false;
-            return !_value.Where((t, i) => _value[i] != that._value[i]).Any();
-        }
-
-        public override int GetHashCode()
-        {
-            return Schema.GetHashCode() + _value.Sum(b => 23 * b);
-        }
+    public override int GetHashCode()
+    {
+        return Schema.GetHashCode() + _value.Sum(b => 23 * b);
     }
 }

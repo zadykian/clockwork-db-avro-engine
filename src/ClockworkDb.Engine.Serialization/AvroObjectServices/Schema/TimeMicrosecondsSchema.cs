@@ -15,42 +15,39 @@
 */
 #endregion
 
-using System;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Infrastructure.Extensions;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
+
+internal sealed class TimeMicrosecondsSchema : LogicalTypeSchema
 {
+    private static readonly TimeSpan _maxTime = new(23, 59, 59);
 
-    internal sealed class TimeMicrosecondsSchema : LogicalTypeSchema
+    public TimeMicrosecondsSchema() : this(typeof(TimeSpan))
     {
-        private static readonly TimeSpan _maxTime = new TimeSpan(23, 59, 59);
+    }
+    public TimeMicrosecondsSchema(Type runtimeType) : base(runtimeType)
+    {
+        BaseTypeSchema = new LongSchema();
+    }
 
-        public TimeMicrosecondsSchema() : this(typeof(TimeSpan))
-        {
-        }
-        public TimeMicrosecondsSchema(Type runtimeType) : base(runtimeType)
-        {
-            BaseTypeSchema = new LongSchema();
-        }
+    internal override AvroType Type => AvroType.Logical;
+    internal override TypeSchema BaseTypeSchema { get; set; }
+    internal override string LogicalTypeName => LogicalTypeEnum.TimeMicrosecond;
+    public object ConvertToBaseValue(object logicalValue, LogicalTypeSchema schema)
+    {
+        var time = (TimeSpan)logicalValue;
 
-        internal override AvroType Type => AvroType.Logical;
-        internal override TypeSchema BaseTypeSchema { get; set; }
-        internal override string LogicalTypeName => LogicalTypeEnum.TimeMicrosecond;
-        public object ConvertToBaseValue(object logicalValue, LogicalTypeSchema schema)
-        {
-            var time = (TimeSpan)logicalValue;
+        if (time > _maxTime)
+            throw new ArgumentOutOfRangeException(nameof(logicalValue), "A 'time-micros' value can only have the range '00:00:00' to '23:59:59'.");
 
-            if (time > _maxTime)
-                throw new ArgumentOutOfRangeException(nameof(logicalValue), "A 'time-micros' value can only have the range '00:00:00' to '23:59:59'.");
+        return (long)(time - DateTimeExtensions.UnixEpochDateTime.TimeOfDay).TotalMilliseconds * 1000;
+    }
 
-            return (long)(time - DateTimeExtensions.UnixEpochDateTime.TimeOfDay).TotalMilliseconds * 1000;
-        }
-
-        internal override object ConvertToLogicalValue(object baseValue, LogicalTypeSchema schema, Type type)
-        {
-            var noMs = (long)baseValue / 1000;
-            return DateTimeExtensions.UnixEpochDateTime.TimeOfDay.Add(TimeSpan.FromMilliseconds(noMs));
-        }
+    internal override object ConvertToLogicalValue(object baseValue, LogicalTypeSchema schema, Type type)
+    {
+        var noMs = (long)baseValue / 1000;
+        return DateTimeExtensions.UnixEpochDateTime.TimeOfDay.Add(TimeSpan.FromMilliseconds(noMs));
     }
 }

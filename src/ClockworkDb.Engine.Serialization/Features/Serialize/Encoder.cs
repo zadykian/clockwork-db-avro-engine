@@ -20,129 +20,126 @@
 /** Modifications copyright(C) 2020 Adrian Strugała **/
 #endregion
 
-using System;
-using System.IO;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Write;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features.Serialize
+namespace ClockworkDb.Engine.Serialization.Features.Serialize;
+
+internal class Encoder : IDisposable
 {
-    internal class Encoder : IDisposable
+    internal delegate void WriteItem(object value, IWriter encoder);
+
+    private readonly TypeSchema _schema;
+    private readonly AbstractCodec _codec;
+    private readonly Stream _stream;
+    private MemoryStream _tempBuffer;
+    private readonly Writer _writer;
+    private IWriter _tempWriter;
+    private readonly WriteItem _writeItem;
+    private bool _isOpen;
+    private bool _headerWritten;
+    private int _blockCount;
+    private readonly int _syncInterval;
+    private readonly Header _header;
+
+
+    internal Encoder(TypeSchema schema, Stream outStream, CodecType codecType)
     {
-        internal delegate void WriteItem(object value, IWriter encoder);
+        _codec = AbstractCodec.CreateCodec(codecType);
+        _stream = outStream;
+        _header = new Header();
+        _schema = schema;
+        _syncInterval = DataFileConstants.DefaultSyncInterval;
 
-        private readonly TypeSchema _schema;
-        private readonly AbstractCodec _codec;
-        private readonly Stream _stream;
-        private MemoryStream _tempBuffer;
-        private readonly Writer _writer;
-        private IWriter _tempWriter;
-        private readonly WriteItem _writeItem;
-        private bool _isOpen;
-        private bool _headerWritten;
-        private int _blockCount;
-        private readonly int _syncInterval;
-        private readonly Header _header;
+        _blockCount = 0;
+        _writer = new Writer(_stream);
+        _tempBuffer = new MemoryStream();
+        _tempWriter = new Writer(_tempBuffer);
 
+        GenerateSyncData();
+        _header.AddMetadata(DataFileConstants.CodecMetadataKey, _codec.Name);
+        _header.AddMetadata(DataFileConstants.SchemaMetadataKey, _schema.ToString());
 
-        internal Encoder(TypeSchema schema, Stream outStream, CodecType codecType)
+        _writeItem = Resolver.ResolveWriter(schema);
+
+        _isOpen = true;
+    }
+
+    internal void Append(object datum)
+    {
+        AssertOpen();
+        EnsureHeader();
+
+        _writeItem(datum, _tempWriter);
+
+        _blockCount++;
+        WriteIfBlockFull();
+    }
+
+    private void EnsureHeader()
+    {
+        if (!_headerWritten)
         {
-            _codec = AbstractCodec.CreateCodec(codecType);
-            _stream = outStream;
-            _header = new Header();
-            _schema = schema;
-            _syncInterval = DataFileConstants.DefaultSyncInterval;
+            WriteHeader();
+            _headerWritten = true;
+        }
+    }
 
+    internal long Sync()
+    {
+        AssertOpen();
+        WriteBlock();
+        return _stream.Position;
+    }
+
+    private void WriteHeader()
+    {
+        _writer.WriteHeader(_header);
+    }
+
+    private void AssertOpen()
+    {
+        if (!_isOpen) throw new AvroRuntimeException("Cannot complete operation: avro file/stream not open");
+    }
+
+    private void WriteIfBlockFull()
+    {
+        if (_tempBuffer.Position >= _syncInterval)
+            WriteBlock();
+    }
+
+    private void WriteBlock()
+    {
+        if (_blockCount > 0)
+        {
+            byte[] dataToWrite = _tempBuffer.ToArray();
+
+            _writer.WriteDataBlock(_codec.Compress(dataToWrite), _header.SyncData, _blockCount);
+
+            // reset block buffer
             _blockCount = 0;
-            _writer = new Writer(_stream);
             _tempBuffer = new MemoryStream();
             _tempWriter = new Writer(_tempBuffer);
-
-            GenerateSyncData();
-            _header.AddMetadata(DataFileConstants.CodecMetadataKey, _codec.Name);
-            _header.AddMetadata(DataFileConstants.SchemaMetadataKey, _schema.ToString());
-
-            _writeItem = Resolver.ResolveWriter(schema);
-
-            _isOpen = true;
         }
+    }
 
-        internal void Append(object datum)
-        {
-            AssertOpen();
-            EnsureHeader();
+    private void GenerateSyncData()
+    {
+        _header.SyncData = new byte[16];
 
-            _writeItem(datum, _tempWriter);
+        Random random = new Random();
+        random.NextBytes(_header.SyncData);
+    }
 
-            _blockCount++;
-            WriteIfBlockFull();
-        }
-
-        private void EnsureHeader()
-        {
-            if (!_headerWritten)
-            {
-                WriteHeader();
-                _headerWritten = true;
-            }
-        }
-
-        internal long Sync()
-        {
-            AssertOpen();
-            WriteBlock();
-            return _stream.Position;
-        }
-
-        private void WriteHeader()
-        {
-            _writer.WriteHeader(_header);
-        }
-
-        private void AssertOpen()
-        {
-            if (!_isOpen) throw new AvroRuntimeException("Cannot complete operation: avro file/stream not open");
-        }
-
-        private void WriteIfBlockFull()
-        {
-            if (_tempBuffer.Position >= _syncInterval)
-                WriteBlock();
-        }
-
-        private void WriteBlock()
-        {
-            if (_blockCount > 0)
-            {
-                byte[] dataToWrite = _tempBuffer.ToArray();
-
-                _writer.WriteDataBlock(_codec.Compress(dataToWrite), _header.SyncData, _blockCount);
-
-                // reset block buffer
-                _blockCount = 0;
-                _tempBuffer = new MemoryStream();
-                _tempWriter = new Writer(_tempBuffer);
-            }
-        }
-
-        private void GenerateSyncData()
-        {
-            _header.SyncData = new byte[16];
-
-            Random random = new Random();
-            random.NextBytes(_header.SyncData);
-        }
-
-        public void Dispose()
-        {
-            EnsureHeader();
-            Sync();
-            _stream.Flush();
-            _stream.Dispose();
-            _isOpen = false;
-        }
+    public void Dispose()
+    {
+        EnsureHeader();
+        Sync();
+        _stream.Flush();
+        _stream.Dispose();
+        _isOpen = false;
     }
 }

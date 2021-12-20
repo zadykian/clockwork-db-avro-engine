@@ -15,55 +15,52 @@
 */
 #endregion
 
-using System;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Infrastructure.Extensions;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
+
+internal sealed class TimestampMillisecondsSchema : LogicalTypeSchema
 {
-
-    internal sealed class TimestampMillisecondsSchema : LogicalTypeSchema
+    public TimestampMillisecondsSchema() : this(typeof(DateTime))
     {
-        public TimestampMillisecondsSchema() : this(typeof(DateTime))
+    }
+    public TimestampMillisecondsSchema(Type runtimeType) : base(runtimeType)
+    {
+        BaseTypeSchema = new LongSchema();
+    }
+
+    internal override AvroType Type => AvroType.Logical;
+    internal override TypeSchema BaseTypeSchema { get; set; }
+    internal override string LogicalTypeName => "timestamp-millis";
+
+    internal object ConvertToBaseValue(object logicalValue, TimestampMillisecondsSchema schema)
+    {
+        DateTime date;
+        if (logicalValue is DateTimeOffset dateTimeOffset)
         {
+            date = dateTimeOffset.DateTime;
         }
-        public TimestampMillisecondsSchema(Type runtimeType) : base(runtimeType)
+        else
         {
-            BaseTypeSchema = new LongSchema();
-        }
-
-        internal override AvroType Type => AvroType.Logical;
-        internal override TypeSchema BaseTypeSchema { get; set; }
-        internal override string LogicalTypeName => "timestamp-millis";
-
-        internal object ConvertToBaseValue(object logicalValue, TimestampMillisecondsSchema schema)
-        {
-            DateTime date;
-            if (logicalValue is DateTimeOffset dateTimeOffset)
-            {
-                date = dateTimeOffset.DateTime;
-            }
-            else
-            {
-                date = ((DateTime)logicalValue);
-            }
-
-            return (long)(date - DateTimeExtensions.UnixEpochDateTime).TotalMilliseconds;
+            date = ((DateTime)logicalValue);
         }
 
-        internal override object ConvertToLogicalValue(object baseValue, LogicalTypeSchema schema, Type type)
-        {
-            var noMs = (long)baseValue;
-            var result =  DateTimeExtensions.UnixEpochDateTime.AddMilliseconds(noMs);
+        return (long)(date - DateTimeExtensions.UnixEpochDateTime).TotalMilliseconds;
+    }
 
-            if (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?))
-            {
-                return DateTimeOffset.FromUnixTimeMilliseconds(noMs);
-            }
-            else
-            {
-                return result;
-            }
+    internal override object ConvertToLogicalValue(object baseValue, LogicalTypeSchema schema, Type type)
+    {
+        var noMs = (long)baseValue;
+        var result =  DateTimeExtensions.UnixEpochDateTime.AddMilliseconds(noMs);
+
+        if (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?))
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds(noMs);
+        }
+        else
+        {
+            return result;
         }
     }
 }

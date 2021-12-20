@@ -20,87 +20,85 @@
 */
 #endregion
 
-using System.IO;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Features.DeserializeByLine.LineReaders;
 
-namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine
+namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine;
+
+internal class BaseLineReader<T> : ILineReader<T>
 {
-    internal class BaseLineReader<T> : ILineReader<T>
+    private readonly Reader _reader;
+    private readonly byte[] _syncDate;
+    private readonly AbstractCodec _codec;
+    private readonly TypeSchema _writeSchema;
+    private readonly TypeSchema _readSchema;
+    private ILineReader<T> _lineReaderInternal;
+
+    internal BaseLineReader(Reader reader, byte[] syncDate, AbstractCodec codec, TypeSchema writeSchema, TypeSchema readSchema)
     {
-        private readonly Reader _reader;
-        private readonly byte[] _syncDate;
-        private readonly AbstractCodec _codec;
-        private readonly TypeSchema _writeSchema;
-        private readonly TypeSchema _readSchema;
-        private ILineReader<T> _lineReaderInternal;
+        _reader = reader;
+        _syncDate = syncDate;
+        _codec = codec;
+        _writeSchema = writeSchema;
+        _readSchema = readSchema;
 
-        internal BaseLineReader(Reader reader, byte[] syncDate, AbstractCodec codec, TypeSchema writeSchema, TypeSchema readSchema)
+        LoadNextDataBlock();
+    }
+
+
+    public bool HasNext()
+    {
+        var hasNext = _lineReaderInternal.HasNext();
+
+        if (!hasNext)
         {
-            _reader = reader;
-            _syncDate = syncDate;
-            _codec = codec;
-            _writeSchema = writeSchema;
-            _readSchema = readSchema;
+            hasNext = !_reader.IsReadToEnd();
 
-            LoadNextDataBlock();
-        }
-
-
-        public bool HasNext()
-        {
-            var hasNext = _lineReaderInternal.HasNext();
-
-            if (!hasNext)
+            if (hasNext)
             {
-                hasNext = !_reader.IsReadToEnd();
-
-                if (hasNext)
-                {
-                    LoadNextDataBlock();
-                    return _lineReaderInternal.HasNext();
-                }
+                LoadNextDataBlock();
+                return _lineReaderInternal.HasNext();
             }
-
-            return hasNext;
         }
 
-        private void LoadNextDataBlock()
+        return hasNext;
+    }
+
+    private void LoadNextDataBlock()
+    {
+        var resolver = new Resolver(_writeSchema, _readSchema);
+
+        var itemsCount = _reader.ReadLong();
+
+        var dataBlock = _reader.ReadDataBlock(_syncDate, _codec);
+        var dataReader = new Reader(new MemoryStream(dataBlock));
+
+
+        if (itemsCount > 1)
         {
-            var resolver = new Resolver(_writeSchema, _readSchema);
-
-            var itemsCount = _reader.ReadLong();
-
-            var dataBlock = _reader.ReadDataBlock(_syncDate, _codec);
-            var dataReader = new Reader(new MemoryStream(dataBlock));
-
-
-            if (itemsCount > 1)
-            {
-                _lineReaderInternal = new BlockLineReader<T>(dataReader, resolver, itemsCount);
-                return;
-            }
-
-            if (_writeSchema.Type == AvroType.Array)
-            {
-                _lineReaderInternal = new ListLineReader<T>(dataReader, new Resolver(((ArraySchema)_writeSchema).ItemSchema, _readSchema));
-                return;
-            }
-
-            _lineReaderInternal = new RecordLineReader<T>(dataReader, resolver);
+            _lineReaderInternal = new BlockLineReader<T>(dataReader, resolver, itemsCount);
+            return;
         }
 
-        public T ReadNext()
+        if (_writeSchema.Type == AvroType.Array)
         {
-            return _lineReaderInternal.ReadNext();
+            _lineReaderInternal = new ListLineReader<T>(dataReader, new Resolver(((ArraySchema)_writeSchema).ItemSchema, _readSchema));
+            return;
         }
 
-        public void Dispose()
-        {
-            _lineReaderInternal.Dispose();
-        }
+        _lineReaderInternal = new RecordLineReader<T>(dataReader, resolver);
+    }
+
+    public T ReadNext()
+    {
+        return _lineReaderInternal.ReadNext();
+    }
+
+    public void Dispose()
+    {
+        _lineReaderInternal.Dispose();
     }
 }

@@ -18,50 +18,48 @@
 
 /** Modifications copyright(C) 2020 Adrian Strugała **/
 
-using System.IO;
 using System.IO.Compression;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
+
+internal class DeflateCodec : AbstractCodec
 {
-    internal class DeflateCodec : AbstractCodec
+    internal override string Name { get; } = CodecType.Deflate.ToString().ToLower();
+
+    internal override byte[] Compress(byte[] uncompressedData)
     {
-        internal override string Name { get; } = CodecType.Deflate.ToString().ToLower();
+        MemoryStream outStream = new MemoryStream();
 
-        internal override byte[] Compress(byte[] uncompressedData)
+        using (DeflateStream Compress =
+               new DeflateStream(outStream,
+                   CompressionMode.Compress))
         {
-            MemoryStream outStream = new MemoryStream();
-
-            using (DeflateStream Compress =
-                        new DeflateStream(outStream,
-                        CompressionMode.Compress))
-            {
-                Compress.Write(uncompressedData, 0, uncompressedData.Length);
-            }
-            return outStream.ToArray();
+            Compress.Write(uncompressedData, 0, uncompressedData.Length);
         }
+        return outStream.ToArray();
+    }
 
-        internal override byte[] Decompress(byte[] compressedData)
+    internal override byte[] Decompress(byte[] compressedData)
+    {
+        MemoryStream inStream = new MemoryStream(compressedData);
+        MemoryStream outStream = new MemoryStream();
+
+        using (DeflateStream Decompress =
+               new DeflateStream(inStream,
+                   CompressionMode.Decompress))
         {
-            MemoryStream inStream = new MemoryStream(compressedData);
-            MemoryStream outStream = new MemoryStream();
-
-            using (DeflateStream Decompress =
-                        new DeflateStream(inStream,
-                        CompressionMode.Decompress))
-            {
-                CopyTo(Decompress, outStream);
-            }
-            return outStream.ToArray();
+            CopyTo(Decompress, outStream);
         }
+        return outStream.ToArray();
+    }
 
-        private static void CopyTo(Stream from, Stream to)
+    private static void CopyTo(Stream from, Stream to)
+    {
+        byte[] buffer = new byte[4096];
+        int read;
+        while ((read = from.Read(buffer, 0, buffer.Length)) != 0)
         {
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = from.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                to.Write(buffer, 0, read);
-            }
+            to.Write(buffer, 0, read);
         }
     }
 }

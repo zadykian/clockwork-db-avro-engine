@@ -18,21 +18,18 @@
 
 /** Modifications copyright(C) 2020 Adrian Strugała **/
 
-using System;
+namespace ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Infrastructure.Exceptions
+internal class AvroRuntimeException : Exception
 {
-    internal class AvroRuntimeException : Exception
+    internal AvroRuntimeException(string s)
+        : base(s)
     {
-        internal AvroRuntimeException(string s)
-            : base(s)
-        {
 
-        }
-        internal AvroRuntimeException(string s, Exception inner)
-            : base(s, inner)
-        {
+    }
+    internal AvroRuntimeException(string s, Exception inner)
+        : base(s, inner)
+    {
 
-        }
     }
 }

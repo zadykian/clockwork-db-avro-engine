@@ -1,12 +1,9 @@
-﻿using System;
+﻿namespace ClockworkDb.Engine.Serialization.Infrastructure.Attributes;
 
-namespace ClockworkDb.Engine.Serialization.Infrastructure.Attributes
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+public class AvroDecimalAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public class AvroDecimalAttribute : Attribute
-    {
-        public virtual int Scale { get; set; }
+    public virtual int Scale { get; set; }
 
-        public virtual int Precision { get; set; }
-    }
+    public virtual int Precision { get; set; }
 }

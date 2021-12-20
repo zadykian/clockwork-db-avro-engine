@@ -20,13 +20,10 @@
 */
 #endregion
 
-using System;
+namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine;
 
-namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine
+public interface ILineReader<T> : IDisposable
 {
-    public interface ILineReader<T> : IDisposable
-    {
-        bool HasNext();
-        T ReadNext();
-    }
+    bool HasNext();
+    T ReadNext();
 }

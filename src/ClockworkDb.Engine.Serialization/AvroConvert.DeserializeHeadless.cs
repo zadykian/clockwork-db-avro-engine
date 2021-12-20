@@ -15,25 +15,23 @@
 */
 #endregion
 
-using System.IO;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 
-namespace ClockworkDb.Engine.Serialization
-{
-    public static partial class AvroConvert
-    {
-        /// <summary>
-        /// Deserializes AVRO object, which does not contain header, to .NET type
-        /// </summary>
-        public static T DeserializeHeadless<T>(byte[] avroBytes, string schema)
-        {
-            var avroSchema = Schema.Create(schema);
-            var reader = new Reader(new MemoryStream(avroBytes));
-            var resolver = new Resolver(avroSchema, avroSchema);
-            var result = resolver.Resolve<T>(reader, 1);
+namespace ClockworkDb.Engine.Serialization;
 
-            return result;
-        }
+public static partial class AvroConvert
+{
+    /// <summary>
+    /// Deserializes AVRO object, which does not contain header, to .NET type
+    /// </summary>
+    public static T DeserializeHeadless<T>(byte[] avroBytes, string schema)
+    {
+        var avroSchema = Schema.Create(schema);
+        var reader = new Reader(new MemoryStream(avroBytes));
+        var resolver = new Resolver(avroSchema, avroSchema);
+        var result = resolver.Resolve<T>(reader, 1);
+
+        return result;
     }
 }

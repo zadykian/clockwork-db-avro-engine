@@ -22,41 +22,40 @@
 
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 
-namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine.LineReaders
+namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine.LineReaders;
+
+internal class RecordLineReader<T> : ILineReader<T>
 {
-    internal class RecordLineReader<T> : ILineReader<T>
+    private readonly Reader _dataReader;
+    private readonly Resolver _resolver;
+
+    private bool _hasNext;
+
+    public RecordLineReader(Reader dataReader, Resolver resolver)
     {
-        private readonly Reader _dataReader;
-        private readonly Resolver _resolver;
+        _dataReader = dataReader;
+        _resolver = resolver;
+        _hasNext = true;
+    }
 
-        private bool _hasNext;
-
-        public RecordLineReader(Reader dataReader, Resolver resolver)
+    public bool HasNext()
+    {
+        if (_hasNext)
         {
-            _dataReader = dataReader;
-            _resolver = resolver;
-            _hasNext = true;
+            _hasNext = false;
+            return true;
         }
 
-        public bool HasNext()
-        {
-            if (_hasNext)
-            {
-                _hasNext = false;
-                return true;
-            }
+        return _hasNext;
+    }
 
-            return _hasNext;
-        }
+    public T ReadNext()
+    {
+        return _resolver.Resolve<T>(_dataReader);
+    }
 
-        public T ReadNext()
-        {
-            return _resolver.Resolve<T>(_dataReader);
-        }
+    public void Dispose()
+    {
 
-        public void Dispose()
-        {
-
-        }
     }
 }

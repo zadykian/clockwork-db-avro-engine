@@ -20,8 +20,6 @@
 */
 #endregion
 
-using System.IO;
-using System.Linq;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
@@ -30,51 +28,50 @@ using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Features.DeserializeByLine.LineReaders;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine
+namespace ClockworkDb.Engine.Serialization.Features.DeserializeByLine;
+
+internal class Decoder
 {
-    internal class Decoder
+    internal static ILineReader<T> OpenReader<T>(Stream stream, TypeSchema readSchema)
     {
-        internal static ILineReader<T> OpenReader<T>(Stream stream, TypeSchema readSchema)
+        var reader = new Reader(stream);
+
+        // validate header 
+        byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+
+        try
         {
-            var reader = new Reader(stream);
+            reader.ReadFixed(firstBytes);
+        }
+        catch (EndOfStreamException)
+        {
+            //stream shorter than AvroHeader
+        }
 
-            // validate header 
-            byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
-
-            try
+        //headless
+        if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
+        {
+            if (readSchema == null)
             {
-                reader.ReadFixed(firstBytes);
+                throw new MissingSchemaException("Provide valid schema for the Avro data");
             }
-            catch (EndOfStreamException)
-            {
-                //stream shorter than AvroHeader
-            }
+            var resolver = new Resolver(readSchema, readSchema);
+            stream.Seek(0, SeekOrigin.Begin);
+            return new ListLineReader<T>(reader, resolver);
+        }
+        else
+        {
+            var header = reader.ReadHeader();
 
-            //headless
-            if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
-            {
-                if (readSchema == null)
-                {
-                    throw new MissingSchemaException("Provide valid schema for the Avro data");
-                }
-                var resolver = new Resolver(readSchema, readSchema);
-                stream.Seek(0, SeekOrigin.Begin);
-                return new ListLineReader<T>(reader, resolver);
-            }
-            else
-            {
-                var header = reader.ReadHeader();
+            readSchema = readSchema ?? Schema.Create(header.GetMetadata(DataFileConstants.SchemaMetadataKey));
+            TypeSchema writeSchema = Schema.Create(header.GetMetadata(DataFileConstants.SchemaMetadataKey));
 
-                readSchema = readSchema ?? Schema.Create(header.GetMetadata(DataFileConstants.SchemaMetadataKey));
-                TypeSchema writeSchema = Schema.Create(header.GetMetadata(DataFileConstants.SchemaMetadataKey));
-
-                // read in sync data 
-                reader.ReadFixed(header.SyncData);
-                var codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
+            // read in sync data 
+            reader.ReadFixed(header.SyncData);
+            var codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
 
 
-                return new BaseLineReader<T>(reader, header.SyncData, codec, writeSchema, readSchema);
-            }
+            return new BaseLineReader<T>(reader, header.SyncData, codec, writeSchema, readSchema);
         }
     }
 }

@@ -18,20 +18,19 @@
 
 /** Modifications copyright(C) 2020 Adrian Strugała **/
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
+
+internal class NullCodec : AbstractCodec
 {
-    internal class NullCodec : AbstractCodec
+    internal override string Name { get; } = CodecType.Null.ToString().ToLower();
+
+    internal override byte[] Decompress(byte[] compressedData)
     {
-        internal override string Name { get; } = CodecType.Null.ToString().ToLower();
+        return compressedData;
+    }
 
-        internal override byte[] Decompress(byte[] compressedData)
-        {
-            return compressedData;
-        }
-
-        internal override byte[] Compress(byte[] uncompressedData)
-        {
-            return uncompressedData;
-        }
+    internal override byte[] Compress(byte[] uncompressedData)
+    {
+        return uncompressedData;
     }
 }

@@ -15,79 +15,73 @@
 
 /** Modifications copyright(C) 2020 Adrian Struga�a **/
 
-using System;
-using System.Collections.Generic;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using Newtonsoft.Json;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
+
+/// <summary>
+///     Schema representing an array.
+///     For more details please see <a href="http://avro.apache.org/docs/current/spec.html#Arrays">the specification</a>.
+/// </summary>
+internal sealed class ArraySchema : TypeSchema
 {
+    private readonly TypeSchema itemSchema;
+
     /// <summary>
-    ///     Schema representing an array.
-    ///     For more details please see <a href="http://avro.apache.org/docs/current/spec.html#Arrays">the specification</a>.
+    ///     Initializes a new instance of the <see cref="ArraySchema" /> class.
     /// </summary>
-    internal sealed class ArraySchema : TypeSchema
+    /// <param name="item">The item.</param>
+    /// <param name="runtimeType">Type of the runtime.</param>
+    /// <param name="attributes">The attributes.</param>
+    internal ArraySchema(
+        TypeSchema item,
+        Type runtimeType,
+        Dictionary<string, string> attributes)
+        : base(runtimeType, attributes)
     {
-        private readonly TypeSchema itemSchema;
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ArraySchema" /> class.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="runtimeType">Type of the runtime.</param>
-        /// <param name="attributes">The attributes.</param>
-        internal ArraySchema(
-            TypeSchema item,
-            Type runtimeType,
-            Dictionary<string, string> attributes)
-            : base(runtimeType, attributes)
+        if (item == null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            this.itemSchema = item;
+            throw new ArgumentNullException(nameof(item));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArraySchema"/> class.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="runtimeType">Type of the runtime.</param>
-        internal ArraySchema(
-            TypeSchema item,
-            Type runtimeType)
-            : this(item, runtimeType, new Dictionary<string, string>())
-        {
-        }
-
-        /// <summary>
-        ///     Gets the item schema.
-        /// </summary>
-        internal TypeSchema ItemSchema
-        {
-            get { return this.itemSchema; }
-        }
-
-        /// <summary>
-        ///     Converts current not to JSON according to the avro specification.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        /// <param name="seenSchemas">The seen schemas.</param>
-        internal override void ToJsonSafe(JsonTextWriter writer, HashSet<NamedSchema> seenSchemas)
-        {
-            writer.WriteStartObject();
-            writer.WriteProperty("type", "array");
-            writer.WritePropertyName("items");
-            this.itemSchema.ToJson(writer, seenSchemas);
-            writer.WriteEndObject();
-        }
-
-        /// <summary>
-        /// Gets the type of the schema as string.
-        /// </summary>
-        internal override AvroType Type => AvroType.Array;
+        itemSchema = item;
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ArraySchema"/> class.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="runtimeType">Type of the runtime.</param>
+    internal ArraySchema(
+        TypeSchema item,
+        Type runtimeType)
+        : this(item, runtimeType, new Dictionary<string, string>())
+    {
+    }
+
+    /// <summary>
+    ///     Gets the item schema.
+    /// </summary>
+    internal TypeSchema ItemSchema => itemSchema;
+
+    /// <summary>
+    ///     Converts current not to JSON according to the avro specification.
+    /// </summary>
+    /// <param name="writer">The writer.</param>
+    /// <param name="seenSchemas">The seen schemas.</param>
+    internal override void ToJsonSafe(JsonTextWriter writer, HashSet<NamedSchema> seenSchemas)
+    {
+        writer.WriteStartObject();
+        writer.WriteProperty("type", "array");
+        writer.WritePropertyName("items");
+        itemSchema.ToJson(writer, seenSchemas);
+        writer.WriteEndObject();
+    }
+
+    /// <summary>
+    /// Gets the type of the schema as string.
+    /// </summary>
+    internal override AvroType Type => AvroType.Array;
 }

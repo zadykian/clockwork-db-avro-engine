@@ -22,30 +22,29 @@
 
 using ClockworkDb.Engine.Serialization.Features.GenerateModel;
 
-namespace ClockworkDb.Engine.Serialization
+namespace ClockworkDb.Engine.Serialization;
+
+public static partial class AvroConvert
 {
-    public static partial class AvroConvert
+    /// <summary>
+    /// Generates C# .NET classes from schema in given AVRO object
+    /// </summary>
+    public static string GenerateModel(byte[] avroBytes)
     {
-        /// <summary>
-        /// Generates C# .NET classes from schema in given AVRO object
-        /// </summary>
-        public static string GenerateModel(byte[] avroBytes)
-        {
-            var generateClassHandler = new GenerateModel();
-            var result = generateClassHandler.FromAvroObject(avroBytes);
+        var generateClassHandler = new GenerateModel();
+        var result = generateClassHandler.FromAvroObject(avroBytes);
 
-            return result;
-        }
+        return result;
+    }
 
-        /// <summary>
-        /// Generates C# .NET classes from given AVRO schema
-        /// </summary>
-        public static string GenerateModel(string schema)
-        {
-            var generateClassHandler = new GenerateModel();
-            var result = generateClassHandler.FromAvroSchema(schema);
+    /// <summary>
+    /// Generates C# .NET classes from given AVRO schema
+    /// </summary>
+    public static string GenerateModel(string schema)
+    {
+        var generateClassHandler = new GenerateModel();
+        var result = generateClassHandler.FromAvroSchema(schema);
 
-            return result;
-        }
+        return result;
     }
 }

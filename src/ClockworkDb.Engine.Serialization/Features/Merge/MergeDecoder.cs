@@ -1,80 +1,62 @@
-﻿#region license
-/**Copyright (c) 2021 Adrian Strugala
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* https://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-#endregion
+﻿
 
-using System.IO;
-using System.Linq;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader.Codec;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.Features.Merge
+namespace ClockworkDb.Engine.Serialization.Features.Merge;
+
+internal class MergeDecoder
 {
-    internal class MergeDecoder
+    internal AvroObjectContent ExtractAvroObjectContent(byte[] avroObject)
     {
-        internal AvroObjectContent ExtractAvroObjectContent(byte[] avroObject)
+        using (var stream = new MemoryStream(avroObject))
         {
-            using (var stream = new MemoryStream(avroObject))
+            var reader = new Reader(stream);
+
+            // validate header 
+            byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+
+            try
             {
-                var reader = new Reader(stream);
+                reader.ReadFixed(firstBytes);
+            }
+            catch (EndOfStreamException)
+            {
+                //stream shorter than AvroHeader
+            }
 
-                // validate header 
-                byte[] firstBytes = new byte[DataFileConstants.AvroHeader.Length];
+            //does not contain header
+            if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
+            {
+                throw new InvalidAvroObjectException("Object does not contain Avro Header");
+            }
+            else
+            {
+                AvroObjectContent result = new AvroObjectContent();
+                var header = reader.ReadHeader();
+                result.Codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
 
-                try
+                reader.ReadFixed(header.SyncData);
+
+                result.Header = header;
+                result.Header.Schema = Schema.Create(result.Header.GetMetadata(DataFileConstants.SchemaMetadataKey));
+
+                do
                 {
-                    reader.ReadFixed(firstBytes);
-                }
-                catch (EndOfStreamException)
-                {
-                    //stream shorter than AvroHeader
-                }
-
-                //does not contain header
-                if (!firstBytes.SequenceEqual(DataFileConstants.AvroHeader))
-                {
-                    throw new InvalidAvroObjectException("Object does not contain Avro Header");
-                }
-                else
-                {
-                    AvroObjectContent result = new AvroObjectContent();
-                    var header = reader.ReadHeader();
-                    result.Codec = AbstractCodec.CreateCodecFromString(header.GetMetadata(DataFileConstants.CodecMetadataKey));
-
-                    reader.ReadFixed(header.SyncData);
-
-                    result.Header = header;
-                    result.Header.Schema = Schema.Create(result.Header.GetMetadata(DataFileConstants.SchemaMetadataKey));
-
-                    do
+                    var blockContent = new DataBlock
                     {
-                        var blockContent = new DataBlock
-                        {
-                            ItemsCount = reader.ReadLong(),
-                            Data = reader.ReadDataBlock(header.SyncData, result.Codec)
-                        };
+                        ItemsCount = reader.ReadLong(),
+                        Data = reader.ReadDataBlock(header.SyncData, result.Codec)
+                    };
 
-                        result.DataBlocks.Add(blockContent);
+                    result.DataBlocks.Add(blockContent);
 
-                    } while (!reader.IsReadToEnd());
+                } while (!reader.IsReadToEnd());
 
-                    return result;
-                }
+                return result;
             }
         }
     }
