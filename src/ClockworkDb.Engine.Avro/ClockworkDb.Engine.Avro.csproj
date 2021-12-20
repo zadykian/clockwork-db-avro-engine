@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
+	<Import Project="$(MSBuildThisFileDirectory)\..\common.props" />
 
 	<ItemGroup>
 		<PackageReference Include="Apache.Avro" Version="1.11.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\ClockworkDb.Engine.Serialization\ClockworkDb.Engine.Serialization.csproj" />
 	</ItemGroup>
 
 </Project>
