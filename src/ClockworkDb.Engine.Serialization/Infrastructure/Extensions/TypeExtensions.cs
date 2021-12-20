@@ -124,23 +124,24 @@ internal static class TypeExtensions
                                      && m.GetParameters().Select(p => p.ParameterType).SequenceEqual(arguments));
     }
 
-    internal static IEnumerable<FieldInfo> GetAllFields(this Type t)
-    {
-        if (t == null)
-        {
-            return Enumerable.Empty<FieldInfo>();
-        }
-
-        const BindingFlags flags =
-            BindingFlags.Public |
-            BindingFlags.NonPublic |
-            BindingFlags.Instance |
-            BindingFlags.DeclaredOnly;
-        return t
-            .GetFields(flags)
-            .Where(f => !f.IsDefined(typeof(CompilerGeneratedAttribute), false))
-            .Concat(GetAllFields(t.BaseType()));
-    }
+    // private static IEnumerable<FieldInfo> GetAllFields(this Type t)
+    // {
+    //     if (t == null)
+    //     {
+    //         return Enumerable.Empty<FieldInfo>();
+    //     }
+    //
+    //     const BindingFlags flags =
+    //         BindingFlags.Public |
+    //         BindingFlags.NonPublic |
+    //         BindingFlags.Instance |
+    //         BindingFlags.DeclaredOnly;
+    //     return t
+    //         .GetFields(flags)
+    //         .Where(f => !f.IsDefined(typeof(CompilerGeneratedAttribute), false))
+    //         .Concat(GetAllFields(t.BaseType()));
+    // }
+    // todo: remove
 
     internal static IEnumerable<PropertyInfo> GetAllProperties(this Type t)
     {
@@ -245,20 +246,21 @@ internal static class TypeExtensions
         }
     }
 
-    internal static string GetStrippedFullName(this Type type)
-    {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (string.IsNullOrEmpty(type.Namespace))
-        {
-            return StripAvroNonCompatibleCharacters(type.Name);
-        }
-
-        return StripAvroNonCompatibleCharacters(type.Namespace + "." + type.Name);
-    }
+    // internal static string GetStrippedFullName(this Type type)
+    // {
+    //     if (type == null)
+    //     {
+    //         throw new ArgumentNullException(nameof(type));
+    //     }
+    //
+    //     if (string.IsNullOrEmpty(type.Namespace))
+    //     {
+    //         return StripAvroNonCompatibleCharacters(type.Name);
+    //     }
+    //
+    //     return StripAvroNonCompatibleCharacters(type.Namespace + "." + type.Name);
+    // }
+    // todo: remove
 
     internal static string StripAvroNonCompatibleCharacters(string value)
     {
@@ -330,43 +332,44 @@ internal static class TypeExtensions
     }
 
 
-    internal static void CheckPropertyGetters(IEnumerable<PropertyInfo> properties)
-    {
-        var missingGetter = properties.FirstOrDefault(p => p.GetGetMethod(true) == null);
-        if (missingGetter != null)
-        {
-            throw new SerializationException(
-                string.Format(CultureInfo.InvariantCulture, "Property '{0}' of class '{1}' does not have a getter.", missingGetter.Name, missingGetter.DeclaringType.FullName));
-        }
-    }
-
-    internal static DataMemberAttribute GetDataMemberAttribute(this PropertyInfo property)
-    {
-        return property
-            .GetCustomAttributes(false)
-            .OfType<DataMemberAttribute>()
-            .SingleOrDefault();
-    }
-
-    internal static IList<PropertyInfo> RemoveDuplicates(IEnumerable<PropertyInfo> properties)
-    {
-        var result = new List<PropertyInfo>();
-        foreach (var p in properties)
-        {
-            if (result.Find(s => s.Name == p.Name) == null)
-            {
-                result.Add(p);
-            }
-        }
-
-        return result;
-    }
-
-    public static Type GetEnumeratedType(this Type type)
-    {
-        return type?.GetElementType() ?? type.GenericTypeArguments.FirstOrDefault();
-
-    }
+    // internal static void CheckPropertyGetters(IEnumerable<PropertyInfo> properties)
+    // {
+    //     var missingGetter = properties.FirstOrDefault(p => p.GetGetMethod(true) == null);
+    //     if (missingGetter != null)
+    //     {
+    //         throw new SerializationException(
+    //             string.Format(CultureInfo.InvariantCulture, "Property '{0}' of class '{1}' does not have a getter.", missingGetter.Name, missingGetter.DeclaringType.FullName));
+    //     }
+    // }
+    //
+    // internal static DataMemberAttribute GetDataMemberAttribute(this PropertyInfo property)
+    // {
+    //     return property
+    //         .GetCustomAttributes(false)
+    //         .OfType<DataMemberAttribute>()
+    //         .SingleOrDefault();
+    // }
+    //
+    // internal static IList<PropertyInfo> RemoveDuplicates(IEnumerable<PropertyInfo> properties)
+    // {
+    //     var result = new List<PropertyInfo>();
+    //     foreach (var p in properties)
+    //     {
+    //         if (result.Find(s => s.Name == p.Name) == null)
+    //         {
+    //             result.Add(p);
+    //         }
+    //     }
+    //
+    //     return result;
+    // }
+    //
+    // public static Type GetEnumeratedType(this Type type)
+    // {
+    //     return type?.GetElementType() ?? type.GenericTypeArguments.FirstOrDefault();
+    //
+    // }
+    // todo: remove
 
     internal static bool IsValueType(this Type type)
     {
@@ -393,20 +396,21 @@ internal static class TypeExtensions
         return type.GetTypeInfo().IsClass;
     }
 
-    internal static bool IsDictionary(this Type type)
-    {
-        return typeof(IDictionary).IsAssignableFrom(type);
-    }
-
-    internal static bool IsList(this Type type)
-    {
-        return typeof(IList).IsAssignableFrom(type);
-    }
-
-    internal static bool IsGuid(this Type type)
-    {
-        return type == typeof(Guid);
-    }
+    // internal static bool IsDictionary(this Type type)
+    // {
+    //     return typeof(IDictionary).IsAssignableFrom(type);
+    // }
+    //
+    // internal static bool IsList(this Type type)
+    // {
+    //     return typeof(IList).IsAssignableFrom(type);
+    // }
+    //
+    // internal static bool IsGuid(this Type type)
+    // {
+    //     return type == typeof(Guid);
+    // }
+    // todo: remove
 
     internal static bool IsAbstract(this Type type)
     {

@@ -1,20 +1,3 @@
-// Copyright (c) Microsoft Corporation
-// All rights reserved.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not
-// use this file except in compliance with the License.  You may obtain a copy
-// of the License at http://www.apache.org/licenses/LICENSE-2.0
-// 
-// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-// WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-// MERCHANTABLITY OR NON-INFRINGEMENT.
-// 
-// See the Apache Version 2.0 License for specific language governing
-// permissions and limitations under the License.
-
-/** Modifications copyright(C) 2020 Adrian Struga�a **/
-
 using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using Newtonsoft.Json;
@@ -22,31 +5,23 @@ using Newtonsoft.Json;
 namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Schema;
 
 /// <summary>
-///     Schema representing an array.
-///     For more details please see <a href="http://avro.apache.org/docs/current/spec.html#Arrays">the specification</a>.
+/// Schema representing an array.
 /// </summary>
 internal sealed class ArraySchema : TypeSchema
 {
-    private readonly TypeSchema itemSchema;
-
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ArraySchema" /> class.
+    /// Initializes a new instance of the <see cref="ArraySchema" /> class.
     /// </summary>
     /// <param name="item">The item.</param>
     /// <param name="runtimeType">Type of the runtime.</param>
     /// <param name="attributes">The attributes.</param>
-    internal ArraySchema(
+    private ArraySchema(
         TypeSchema item,
         Type runtimeType,
-        Dictionary<string, string> attributes)
+        IDictionary<string, string> attributes)
         : base(runtimeType, attributes)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
-
-        itemSchema = item;
+        ItemSchema = item ?? throw new ArgumentNullException(nameof(item));
     }
 
     /// <summary>
@@ -64,7 +39,7 @@ internal sealed class ArraySchema : TypeSchema
     /// <summary>
     ///     Gets the item schema.
     /// </summary>
-    internal TypeSchema ItemSchema => itemSchema;
+    internal TypeSchema ItemSchema { get; }
 
     /// <summary>
     ///     Converts current not to JSON according to the avro specification.
@@ -76,7 +51,7 @@ internal sealed class ArraySchema : TypeSchema
         writer.WriteStartObject();
         writer.WriteProperty("type", "array");
         writer.WritePropertyName("items");
-        itemSchema.ToJson(writer, seenSchemas);
+        ItemSchema.ToJson(writer, seenSchemas);
         writer.WriteEndObject();
     }
 

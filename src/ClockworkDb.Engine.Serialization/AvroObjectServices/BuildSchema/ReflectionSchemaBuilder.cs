@@ -18,8 +18,8 @@ internal sealed class ReflectionSchemaBuilder
         {
             { typeof(decimal), type => new DecimalSchema(type) },
             { typeof(Guid), type => new UuidSchema(type) },
-            { typeof(DateTime), type => new TimestampMillisecondsSchema(type) },
-            { typeof(DateTimeOffset), type => new TimestampMillisecondsSchema(type) },
+            // { typeof(DateTime), type => new TimestampMillisecondsSchema(type) },
+            // { typeof(DateTimeOffset), type => new TimestampMillisecondsSchema(type) },
             { typeof(TimeSpan), type => new DurationSchema(type) },
         };
 

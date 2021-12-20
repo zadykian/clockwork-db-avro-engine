@@ -1,6 +1,7 @@
 ﻿using ClockworkDb.Engine.Serialization.AvroObjectServices.BuildSchema;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.FileHeader;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
+using ClockworkDb.Engine.Serialization.AvroObjectServices.Read.Resolvers;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
@@ -43,20 +44,16 @@ internal static class Decoder
 
 	private static T Read<T>(Reader reader, Header header, Resolver resolver)
 	{
-		long itemsCount = 0;
 		var dataBlock = Array.Empty<byte>();
 
 		do
 		{
-			itemsCount += reader.ReadLong();
 			var data = reader.ReadDataBlock(header.SyncData);
-
 			var array1OriginalLength = dataBlock.Length;
 			Array.Resize(ref dataBlock, array1OriginalLength + data.Length);
 			Array.Copy(data, 0, dataBlock, array1OriginalLength, data.Length);
 		} while (!reader.IsReadToEnd());
 
-		reader = new Reader(new MemoryStream(dataBlock));
-		return resolver.Resolve<T>(reader, itemsCount);
+		return resolver.Resolve<T>(new Reader(new MemoryStream(dataBlock)));
 	}
 }

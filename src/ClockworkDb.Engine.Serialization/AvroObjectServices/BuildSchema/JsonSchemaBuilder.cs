@@ -209,7 +209,7 @@ internal sealed class JsonSchemaBuilder
         var enumName = new SchemaName(name, nspace);
 
         var doc = enumeration.OptionalProperty<string>(Token.Doc);
-        var aliases = GetAliases(enumeration, enumName.Namespace);
+        var aliases = GetAliases(enumeration);
         var attributes = new NamedEntityAttributes(enumName, aliases, doc);
 
         List<string> symbols = enumeration.OptionalArrayProperty(
@@ -293,18 +293,19 @@ internal sealed class JsonSchemaBuilder
             case LogicalTypeSchema.LogicalTypeEnum.Duration:
                 result = new DurationSchema();
                 break;
-            case LogicalTypeSchema.LogicalTypeEnum.TimestampMilliseconds:
-                result = new TimestampMillisecondsSchema();
-                break;
-            case LogicalTypeSchema.LogicalTypeEnum.TimestampMicroseconds:
-                result = new TimestampMicrosecondsSchema();
-                break;
-            case LogicalTypeSchema.LogicalTypeEnum.TimeMilliseconds:
-                result = new TimeMillisecondsSchema();
-                break;
-            case LogicalTypeSchema.LogicalTypeEnum.TimeMicrosecond:
-                result = new TimeMicrosecondsSchema();
-                break;
+            // todo: remove
+            // case LogicalTypeSchema.LogicalTypeEnum.TimestampMilliseconds:
+            //     result = new TimestampMillisecondsSchema();
+            //     break;
+            // case LogicalTypeSchema.LogicalTypeEnum.TimestampMicroseconds:
+            //     result = new TimestampMicrosecondsSchema();
+            //     break;
+            // case LogicalTypeSchema.LogicalTypeEnum.TimeMilliseconds:
+            //     result = new TimeMillisecondsSchema();
+            //     break;
+            // case LogicalTypeSchema.LogicalTypeEnum.TimeMicrosecond:
+            //     result = new TimeMicrosecondsSchema();
+            //     break;
             case LogicalTypeSchema.LogicalTypeEnum.Date:
                 result = new DateSchema();
                 break;
@@ -333,7 +334,7 @@ internal sealed class JsonSchemaBuilder
         var recordName = new SchemaName(name, nspace);
 
         var doc = record.OptionalProperty<string>(Token.Doc);
-        var aliases = GetAliases(record, recordName.Namespace);
+        var aliases = GetAliases(record);
         var attributes = new NamedEntityAttributes(recordName, aliases, doc);
 
         Dictionary<string, string> customAttributes = record.GetAttributesNotIn(StandardProperties.Record);
@@ -359,20 +360,16 @@ internal sealed class JsonSchemaBuilder
     /// <summary>
     /// Parses the record field.
     /// </summary>
-    /// <param name="field">The field.</param>
-    /// <param name="parent">The parent schema.</param>
-    /// <param name="namedSchemas">The named schemas.</param>
-    /// <param name="position">The position.</param>
-    /// <returns>
-    /// Schema internal representation.
-    /// </returns>
-    /// <exception cref="System.Runtime.Serialization.SerializationException">Thrown when <paramref name="field"/> is not valid or when sort order is not valid.</exception>
-    private RecordField ParseRecordField(JObject field, NamedSchema parent, Dictionary<string, NamedSchema> namedSchemas, int position)
+    private RecordField ParseRecordField(
+        JObject field,
+        NamedSchema parent,
+        Dictionary<string, NamedSchema> namedSchemas,
+        int position)
     {
         var name = field.RequiredProperty<string>(Token.Name);
         var doc = field.OptionalProperty<string>(Token.Doc);
         var order = field.OptionalProperty<string>(Token.Order);
-        var aliases = GetAliases(field, parent.FullName);
+        var aliases = GetAliases(field);
         var fieldType = field[Token.Type];
         if (fieldType == null)
         {
@@ -422,13 +419,9 @@ internal sealed class JsonSchemaBuilder
     /// <param name="token">The token.</param>
     /// <param name="usingTypeName">Will use this type name for creating the primitive type.</param>
     /// <returns>Schema internal representation.</returns>
-    private TypeSchema ParsePrimitiveTypeFromObject(JObject token, string usingTypeName = null)
+    private static TypeSchema ParsePrimitiveTypeFromObject(JObject token, string usingTypeName = null)
     {
-        if (usingTypeName == null)
-        {
-            usingTypeName = token.RequiredProperty<string>(Token.Type);
-        }
-
+        usingTypeName ??= token.RequiredProperty<string>(Token.Type);
         var customAttributes = token.GetAttributesNotIn(StandardProperties.Primitive);
         return CreatePrimitiveTypeSchema(usingTypeName, customAttributes);
     }
@@ -439,21 +432,21 @@ internal sealed class JsonSchemaBuilder
     /// <param name="type">The type.</param>
     /// <param name="attributes">The attributes.</param>
     /// <returns>Schema internal representation.</returns>
-    private TypeSchema CreatePrimitiveTypeSchema(string type, Dictionary<string, string> attributes)
+    private static TypeSchema CreatePrimitiveTypeSchema(string type, Dictionary<string, string> attributes)
     {
         var result = primitiveRuntimeType[type]();
-        foreach (var attribute in attributes)
+        foreach (var (key, value) in attributes)
         {
-            result.AddAttribute(attribute.Key, attribute.Value);
+            result.AddAttribute(key, value);
         }
         return result;
     }
 
-    private FixedSchema ParseFixedType(JObject type, NamedSchema parent)
+    private static FixedSchema ParseFixedType(JObject type, NamedSchema parent)
     {
         var name = type.RequiredProperty<string>(Token.Name);
-        var nspace = GetNamespace(type, parent, name);
-        var fixedName = new SchemaName(name, nspace);
+        var @namespace = GetNamespace(type, parent, name);
+        var fixedName = new SchemaName(name, @namespace);
 
         var size = type.RequiredProperty<int>(Token.Size);
         if (size <= 0)
@@ -462,7 +455,7 @@ internal sealed class JsonSchemaBuilder
                 string.Format(CultureInfo.InvariantCulture, "Only positive size of fixed values allowed: '{0}'.", size));
         }
 
-        var aliases = GetAliases(type, fixedName.Namespace);
+        var aliases = GetAliases(type);
         var attributes = new NamedEntityAttributes(fixedName, aliases, string.Empty);
 
         var customAttributes = type.GetAttributesNotIn(StandardProperties.Record);
@@ -470,21 +463,20 @@ internal sealed class JsonSchemaBuilder
         return result;
     }
 
-    private string GetNamespace(JObject type, NamedSchema parentSchema, string name)
+    private static string GetNamespace(JToken type, NamedSchema parentSchema, string name)
     {
-        var nspace = type.OptionalProperty<string>(Token.Namespace);
-        if (string.IsNullOrEmpty(nspace) && !name.Contains(".") && parentSchema != null)
+        var @namespace = type.OptionalProperty<string>(Token.Namespace);
+        if (string.IsNullOrEmpty(@namespace) && !name.Contains('.') && parentSchema != null)
         {
-            nspace = parentSchema.Namespace;
+            @namespace = parentSchema.Namespace;
         }
-        return nspace;
+        return @namespace;
     }
 
-    private List<string> GetAliases(JObject type, string @namespace)
-    {
-        List<string> aliases = type.OptionalArrayProperty(
+    private static IEnumerable<string> GetAliases(JToken type)
+        => type.OptionalArrayProperty(
             Token.Aliases,
-            (alias, index) =>
+            (alias, _) =>
             {
                 if (alias.Type != JTokenType.String)
                 {
@@ -501,7 +493,4 @@ internal sealed class JsonSchemaBuilder
 
                 return result;
             });
-
-        return aliases;
-    }
 }

@@ -3,7 +3,7 @@ using ClockworkDb.Engine.Serialization.AvroObjectServices.Schema.Abstract;
 using ClockworkDb.Engine.Serialization.AvroObjectServices.Skip;
 using ClockworkDb.Engine.Serialization.Infrastructure.Exceptions;
 
-namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read;
+namespace ClockworkDb.Engine.Serialization.AvroObjectServices.Read.Resolvers;
 
 internal partial class Resolver
 {
@@ -19,21 +19,9 @@ internal partial class Resolver
         skipper = new Skipper();
     }
 
-    internal T Resolve<T>(IReader reader, long itemsCount = 0)
-    {
-        if (itemsCount > 1)
-        {
-            return (T)ResolveArray(
-                writerSchema,
-                readerSchema,
-                reader, typeof(T), itemsCount);
-        }
+    internal T Resolve<T>(IReader reader) => (T) Resolve(writerSchema, readerSchema, reader, typeof(T));
 
-        var result = Resolve(writerSchema, readerSchema, reader, typeof(T));
-        return (T)result;
-    }
-
-    internal object Resolve(
+    private object Resolve(
         TypeSchema writerSchema,
         TypeSchema readerSchema,
         IReader d,
@@ -43,7 +31,7 @@ internal partial class Resolver
         {
             if (readerSchema.Type == AvroType.Union && writerSchema.Type != AvroType.Union)
             {
-                readerSchema = Resolvers.Resolver.FindBranch(readerSchema as UnionSchema, writerSchema);
+                readerSchema = FindBranch(readerSchema as UnionSchema, writerSchema);
             }
 
             switch (writerSchema.Type)
@@ -73,8 +61,6 @@ internal partial class Resolver
                     return ResolveEnum((EnumSchema)writerSchema, readerSchema, d, type);
                 case AvroType.Fixed:
                     return ResolveFixed((FixedSchema)writerSchema, readerSchema, d, type);
-                case AvroType.Array:
-                    return ResolveArray(writerSchema, readerSchema, d, type);
                 case AvroType.Map:
                     return ResolveMap((MapSchema)writerSchema, readerSchema, d, type);
                 case AvroType.Union:
