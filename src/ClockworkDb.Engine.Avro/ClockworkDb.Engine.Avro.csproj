@@ -4,6 +4,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Apache.Avro" Version="1.11.0" />
+		<PackageReference Include="System.Linq.Async" Version="5.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
